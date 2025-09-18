@@ -3,9 +3,7 @@ module.exports = function (api) {
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      // giữ plugin của expo-router nếu có
-      'expo-router/babel',
-      // thêm alias
+      // alias
       [
         'module-resolver',
         {
