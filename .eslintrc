@@ -1,0 +1,6 @@
+{
+  // ESLint configuration
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  }
+}
