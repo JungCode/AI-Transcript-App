@@ -4,7 +4,7 @@ echo '(1/3) 🏗️👷 Styling, testing and building your project before commit
 npm run check-types
 
 echo '(2/3) ✅  Linting your project'
-npm run lint-staged
+npm run lint:staged
 
 echo '(3/3) ✅ Finished linting your project, checking commit message with conventional commit'
 npm run lint
