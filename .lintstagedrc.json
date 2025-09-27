@@ -1,1 +1,3 @@
-{ "*.{ts,tsx,js}": "eslint --fix --ext .tsx,.ts,.js,.jsx app core features shared" }
+{
+  "*.{ts,tsx,js}": "eslint --fix --ext .tsx,.ts,.js,.jsx src"
+}

@@ -11,7 +11,7 @@
     "check-types": "npx cross-env NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit --pretty",
     "test:units": "npx cross-env NODE_OPTIONS=--max-old-space-size=8192 vitest run tests/unit",
     "lint:staged": "lint-staged",
-    "lint": "npx cross-env NODE_OPTIONS=--max-old-space-size=8192 eslint --ext .tsx,.ts,.js,.jsx app/ shared/ features/ --fix --quiet",
+    "lint": "npx cross-env NODE_OPTIONS=--max-old-space-size=8192 eslint --ext .tsx,.ts,.js,.jsx src/ --fix --quiet",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "prepare": "husky"
   },
