@@ -1,5 +1,5 @@
-import { EpisodeScreen } from '@/features/Episode/screen';
+import { EpisodeListScreen } from '@/features/Episode/screen/EpisodeListScreen';
 
 export default function EpisodeRoute() {
-  return <EpisodeScreen />;
+  return <EpisodeListScreen />;
 }

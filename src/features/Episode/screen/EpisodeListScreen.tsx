@@ -6,7 +6,7 @@ import {
 } from '@/shared/helpers/format';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import {
   ActivityIndicator,
   ScrollView,
@@ -14,9 +14,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import type { ITranscriptionScreenParams } from '../constants';
 
-const EpisodeScreen = () => {
-  const router = useRouter();
+const EpisodeListScreen = () => {
   const { feedId, feedAuthor, feedImage, feedTitle } = useLocalSearchParams<{
     feedId: string;
     feedTitle?: string;
@@ -24,14 +24,29 @@ const EpisodeScreen = () => {
     feedImage?: string;
   }>();
 
-  const parsedFeedId = parseInt(feedId, 10);
-
   const { data: episodes = [], isLoading } = useGetFeedEpisodes(
-    parsedFeedId,
+    parseInt(feedId, 10),
     undefined,
   );
 
   const episodeCount = episodes.length;
+
+  const handleGoToTranscription = ({
+    episodeId,
+    episodeUrl,
+    episodeTitle,
+    feedTitle,
+  }: ITranscriptionScreenParams) => {
+    router.push({
+      pathname: '/episode/transcription',
+      params: {
+        episodeId,
+        episodeUrl,
+        episodeTitle,
+        feedTitle,
+      },
+    });
+  };
 
   return (
     <View className="bg-surface flex-1 px-6">
@@ -130,6 +145,14 @@ const EpisodeScreen = () => {
           episodes?.length > 0 &&
           episodes.map((episode, index) => (
             <TouchableOpacity
+              onPress={() =>
+                handleGoToTranscription({
+                  episodeId: episode.id,
+                  episodeUrl: episode.enclosure_url,
+                  episodeTitle: episode.episode_title,
+                  feedTitle: feedTitle,
+                })
+              }
               key={episode.id || index}
               className="bg-surface-deep rounded-[12px] p-4 mb-3"
               activeOpacity={0.7}
@@ -156,11 +179,9 @@ const EpisodeScreen = () => {
 
                 {/* Episode Info */}
                 <View className="flex-1">
-                  {episode.episode_pub_date && (
-                    <Text className="text-text-muted text-xs font-bold mb-1 font-nunito">
-                      {formatDate(episode.episode_pub_date)}
-                    </Text>
-                  )}
+                  <Text className="text-text-muted text-xs font-bold mb-1 font-nunito">
+                    {formatDate(episode?.episode_pub_date) || ''}
+                  </Text>
 
                   <Text
                     className="text-text-soft text-base font-bold mb-2 font-nunito"
@@ -173,7 +194,8 @@ const EpisodeScreen = () => {
                     className="text-text-muted text-[14px] mb-2 font-nunito"
                     numberOfLines={2}
                   >
-                    {formatStripHTML(episode.episode_description)}
+                    {formatStripHTML(episode.episode_description) ||
+                      'No description available'}
                   </Text>
 
                   {episode.duration && (
@@ -190,4 +212,4 @@ const EpisodeScreen = () => {
   );
 };
 
-export { EpisodeScreen };
+export { EpisodeListScreen };
