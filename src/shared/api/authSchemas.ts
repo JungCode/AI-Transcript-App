@@ -56,9 +56,9 @@ export interface ValidationError {
   type: string;
 }
 
-export interface VerifyTokenVerifyGetParams {
+export type VerifyTokenVerifyGetParams = {
   token: string;
-}
+};
 
 /**
  * @summary Health
