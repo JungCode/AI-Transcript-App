@@ -4,7 +4,6 @@
  * FastAPI
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -16,6 +15,7 @@ import type {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { apiClient } from './apiClient';
 export type FeedReadImage = string | null;
@@ -371,7 +371,7 @@ export const getFeedEpisodesFeedsFeedIdEpisodesGet = (
   signal?: AbortSignal,
 ) => {
   return apiClient<unknown>({
-    url: `/feeds/${feedId}/episodes`,
+    url: `/podcast/feeds/${feedId}/episodes`,
     method: 'GET',
     params,
     signal,
