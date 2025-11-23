@@ -1,13 +1,14 @@
-import { Spinner } from '@/shared/components/Spinner';
-import type EvilIcons from '@expo/vector-icons/EvilIcons';
-import type { TouchableOpacityProps } from 'react-native';
-import { Text, TouchableOpacity } from 'react-native';
+import type {
+  ActivityIndicatorProps,
+  TouchableOpacityProps,
+} from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity } from 'react-native';
 
 interface IButton extends TouchableOpacityProps {
   type?: 'primary' | 'ghost';
   isLoading?: boolean;
   textClassName?: string;
-  loadingIconProps?: Omit<React.ComponentProps<typeof EvilIcons>, 'name'>;
+  loadingIconProps?: ActivityIndicatorProps;
 }
 
 const buttonVariants: Record<NonNullable<IButton['type']>, string> = {
@@ -37,7 +38,7 @@ const Button = ({
       className={`${baseClass} ${className ?? ''} ${isLoading ? 'opacity-70' : ''}`}
       disabled={isLoading}
     >
-      {isLoading && <Spinner color="white" {...loadingIconProps} />}
+      {isLoading && <ActivityIndicator color="white" {...loadingIconProps} />}
       <Text
         className={`text-primary font-bold text-lg font-nunito ${textClassName}`}
       >

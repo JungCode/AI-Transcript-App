@@ -22,10 +22,16 @@ for (const file of schemaFiles) {
   try {
     let code = fs.readFileSync(absPath, 'utf8');
 
-    // ✅ Regex match cả dấu ', ", `
-    const updated = code.replace(
-      /url:\s*(['"`])(?!(?:\/auth|\/podcast|\/admin|\/[a-z0-9_-]+\/))([^'"`]+)\1/g,
-      (_, quote, urlPath) => `url: \`${prefix}${urlPath}\``,
+    // ✅ Regex match URLs including template literals with ${}
+    let updated = code.replace(
+      /url:\s*`(\/(?!auth\/|podcast\/|admin\/)([^`]+))`/g,
+      (_, urlPath) => `url: \`${prefix}${urlPath}\``,
+    );
+
+    // ✅ Update query keys: [`/feeds...`] → [`/podcast/feeds...`]
+    updated = updated.replace(
+      /return\s*\[\s*`(\/(?!auth\/|podcast\/|admin\/)([^`]+))`/g,
+      (_, urlPath) => `return [\`${prefix}${urlPath}\``,
     );
 
     if (updated === code) {

@@ -1,17 +1,40 @@
-import { useRegisterUserRegisterPost } from '@/shared/api/authSchemas';
+import { Button, Input } from '@/core/components';
+import { useRegisterUser } from '@/shared/api/authSchemas';
 import logoSource from '@/shared/assets/images/icons/logo.svg';
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
-import { Button } from '../../../../shared/components/Button';
-import { Input } from '../../../../shared/components/Input';
 
 export default function SignUpScreen() {
   const [full_name, setFullName] = useState<string>();
   const [email, setEmail] = useState<string>();
   const [password, setPassword] = useState<string>();
+
+  const { mutate: registerMutate, isPending: isLoading } = useRegisterUser({
+    mutation: {
+      onSuccess: () => {
+        Toast.show({
+          type: 'success',
+          text1: 'Đăng ký thành công 🎉',
+          text2: 'Chào mừng bạn!',
+        });
+      },
+      onError: () => {
+        Toast.show({
+          type: 'error',
+          text1: 'Đăng ký thất bại',
+          text2: 'Email hoặc mật khẩu không hợp lệ!',
+        });
+      },
+    },
+  });
+
+  const handleGoToLogin = () => {
+    router.replace('/login');
+  };
 
   const handleChangeName = (value: string) => {
     setFullName(value);
@@ -35,26 +58,6 @@ export default function SignUpScreen() {
       },
     });
   };
-
-  const { mutate: registerMutate, isPending: isLoading } =
-    useRegisterUserRegisterPost({
-      mutation: {
-        onSuccess: res => {
-          Toast.show({
-            type: 'success',
-            text1: 'Đăng ký thành công 🎉',
-            text2: 'Chào mừng bạn!',
-          });
-        },
-        onError: err => {
-          Toast.show({
-            type: 'error',
-            text1: 'Đăng ký thất bại',
-            text2: 'Email hoặc mật khẩu không hợp lệ!',
-          });
-        },
-      },
-    });
 
   return (
     <KeyboardAwareScrollView
@@ -111,7 +114,11 @@ export default function SignUpScreen() {
               Already have an account?
             </Text>
 
-            <Button type="ghost" textClassName="text-sm">
+            <Button
+              type="ghost"
+              textClassName="text-sm"
+              onPress={handleGoToLogin}
+            >
               Log In
             </Button>
           </View>

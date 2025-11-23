@@ -1,7 +1,7 @@
-import { useLoginUserLoginPost } from '@/shared/api/authSchemas';
+import { Button, Input } from '@/core/components';
+import { useLoginUser } from '@/shared/api/authSchemas';
 import logoSource from '@/shared/assets/images/icons/logo.svg';
-import { Button } from '@/shared/components/Button';
-import { Input } from '@/shared/components/Input';
+import { setSecureItem } from '@/shared/utlis/storage';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -36,16 +36,23 @@ export default function LoginScreen() {
     router.push('/register');
   };
 
-  const { mutate: loginMutate, isPending: isLoading } = useLoginUserLoginPost({
+  const handleGoToHome = () => {
+    router.replace('/dashboard/home');
+  };
+
+  const { mutate: loginMutate, isPending: isLoading } = useLoginUser({
     mutation: {
-      onSuccess: res => {
+      onSuccess: async response => {
+        await setSecureItem('access_token', response.access_token);
+        handleGoToHome();
+
         Toast.show({
           type: 'success',
           text1: 'Đăng nhập thành công 🎉',
           text2: 'Chào mừng bạn quay trở lại!',
         });
       },
-      onError: err => {
+      onError: () => {
         Toast.show({
           type: 'error',
           text1: 'Đăng nhập thất bại',
