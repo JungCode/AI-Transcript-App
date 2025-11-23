@@ -10,18 +10,47 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Build and install the development build
+
+   This project uses `expo-dev-client`, which requires a development build to be installed on your device/simulator before you can run the app.
+
+   **For iOS:**
+   
+   ```bash
+   npm run ios
+   ```
+   
+   This will build and install the development build on the iOS simulator. For a physical device, you'll need to:
+   - Connect your device via USB
+   - Ensure your device is registered in your Apple Developer account
+   - Run `npm run ios` with your device selected
+
+   **For Android:**
+   
+   ```bash
+   npm run android
+   ```
+   
+   This will build and install the development build on an Android emulator or connected device.
+
+3. Start the development server
+
+   After the development build is installed, start the Expo development server:
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+   The app should automatically connect to the development server. If it doesn't, you can:
+   - Shake your device to open the developer menu
+   - Select "Reload" or scan the QR code
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Development Builds
+
+This project uses [development builds](https://docs.expo.dev/develop/development-builds/introduction/), which allow you to use custom native code and modules that aren't available in Expo Go. You'll need to rebuild the development build whenever you:
+- Add or modify native dependencies
+- Change native configuration in `app.json`
+- Update Expo SDK version
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
