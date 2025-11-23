@@ -1,6 +1,6 @@
 import { useTokenChecker } from '@/shared/hooks/secureStore/useSecureStore';
 import { Redirect, Stack } from 'expo-router';
-import { Text, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PrivateLayout() {
@@ -8,16 +8,20 @@ export default function PrivateLayout() {
 
   if (isLoading)
     return (
-      <View>
-        <Text>Loading</Text>
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#4a6b2a" />
       </View>
-    ); // loading screen
+    );
 
   if (!hasToken) return <Redirect href="/login" />;
 
   return (
-    <SafeAreaView className="flex-1">
-      <Stack screenOptions={{ headerShown: false }} />
+    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      />
     </SafeAreaView>
   );
 }

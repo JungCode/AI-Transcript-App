@@ -1,4 +1,4 @@
-import type { TextInputProps} from 'react-native';
+import type { TextInputProps } from 'react-native';
 import { Text, TextInput, View } from 'react-native';
 
 interface IInput extends TextInputProps {
@@ -15,8 +15,7 @@ const Input = ({ label, ...rest }: IInput) => {
       )}
       <TextInput
         {...rest}
-        placeholderTextColor="#E7E9DD"
-        className="border px-5 py-4 rounded-xl border-border-soft text-white text-lg font-nunito items-center focus:border-primary leading-snug "
+        className="border px-5 py-4 rounded-xl border-border-soft text-white text-lg font-nunito items-center focus:border-primary leading-snug placeholder:text-text-soft"
       />
     </View>
   );

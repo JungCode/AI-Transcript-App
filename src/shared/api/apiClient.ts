@@ -6,6 +6,7 @@ import type {
   InternalAxiosRequestConfig,
 } from 'axios';
 import axios from 'axios';
+import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
@@ -19,7 +20,10 @@ const axiosInstance: AxiosInstance = axios.create({
 
 // Log API URL for debugging
 if (__DEV__) {
-  console.log('API Base URL:', process.env.EXPO_PUBLIC_API_URL ?? 'https://mirai-ai.space');
+  console.log(
+    'API Base URL:',
+    process.env.EXPO_PUBLIC_API_URL ?? 'https://mirai-ai.space',
+  );
 }
 
 // Interceptor thêm token
@@ -60,6 +64,7 @@ axiosInstance.interceptors.response.use(
     const status = axiosError.response?.status;
 
     if (status === 401) {
+      router.replace('/login');
       console.warn('⚠️ Unauthorized - redirect to login');
     }
 
@@ -70,11 +75,14 @@ axiosInstance.interceptors.response.use(
       }
       const networkError = axiosError as NetworkError;
       const errorCode: string | undefined = networkError.code;
-      
+
       // Don't log ERR_CANCELED errors as they're expected when navigating away or cancelling requests
       if (errorCode !== 'ERR_CANCELED') {
         console.error('Network Error:', {
-          message: typeof axiosError.message === 'string' ? axiosError.message : 'Unknown error',
+          message:
+            typeof axiosError.message === 'string'
+              ? axiosError.message
+              : 'Unknown error',
           code: errorCode,
           config: {
             url: axiosError.config?.url,
