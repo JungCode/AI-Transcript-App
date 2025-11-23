@@ -43,7 +43,17 @@ export default function Setting() {
         {/* Header */}
         <View className="px-6 pt-4 pb-6">
           <View className="flex-row items-center mb-2">
-            <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} className="mr-3">
+            <TouchableOpacity 
+              onPress={() => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace('/');
+                }
+              }} 
+              activeOpacity={0.7} 
+              className="mr-3"
+            >
               <Ionicons name="arrow-back" size={28} color="#e7e9dd" />
             </TouchableOpacity>
             <Text className="text-[#e7e9dd] text-[32px] font-bold">Settings</Text>
@@ -154,7 +164,7 @@ export default function Setting() {
               <View className="bg-[#171e16] border border-[#262e1f] rounded-[15px] py-3 w-[200px]">
                 <View className="flex-row items-center justify-around px-4">
                   {/* Home Tab */}
-                  <TouchableOpacity className="items-center" onPress={() => router.push('/')}>
+                  <TouchableOpacity className="items-center" onPress={() => router.replace('/')}>
                     <View className="w-[24px] h-[24px] mb-1 items-center justify-center">
                       <Ionicons name="home" size={20} color="#e7e9dd" />
                     </View>
@@ -164,7 +174,7 @@ export default function Setting() {
                   </TouchableOpacity>
 
                   {/* Podcast Tab */}
-                  <TouchableOpacity className="items-center" onPress={() => router.push('/Podcast')}>
+                  <TouchableOpacity className="items-center" onPress={() => router.replace('/Podcast')}>
                     <View className="w-[24px] h-[24px] mb-1 items-center justify-center">
                       <MaterialIcons name="podcasts" size={20} color="#e7e9dd" />
                     </View>
@@ -174,7 +184,7 @@ export default function Setting() {
                   </TouchableOpacity>
 
                   {/* Setting Tab - Active */}
-                  <TouchableOpacity className="items-center" onPress={() => router.push('/Setting')}>
+                  <TouchableOpacity className="items-center" onPress={() => router.replace('/Setting')}>
                     <View className="bg-[#314c19] rounded-[5px] w-[30px] h-[26px] items-center justify-center mb-1">
                       <Ionicons name="settings-sharp" size={18} color="#e7e9dd" />
                     </View>

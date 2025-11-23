@@ -135,7 +135,16 @@ export default function Login() {
     <SafeAreaView className="flex-1 bg-[#f6fdee]" edges={['top', 'bottom']}>
       {/* Back Button */}
       <View className="px-6 pt-4 pb-2">
-        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
+        <TouchableOpacity 
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/');
+            }
+          }} 
+          activeOpacity={0.7}
+        >
           <Ionicons name="arrow-back" size={28} color="#61764b" />
         </TouchableOpacity>
       </View>
