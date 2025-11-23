@@ -1,9 +1,9 @@
 import type {
-    AxiosError,
-    AxiosInstance,
-    AxiosRequestConfig,
-    AxiosResponse,
-    InternalAxiosRequestConfig,
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
 } from 'axios';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
@@ -63,22 +63,26 @@ axiosInstance.interceptors.response.use(
       console.warn('⚠️ Unauthorized - redirect to login');
     }
 
-    // Log network errors for debugging
+    // Log network errors for debugging (skip ERR_CANCELED as it's normal when requests are cancelled)
     if (__DEV__ && !axiosError.response) {
       interface NetworkError extends AxiosError {
         code?: string;
       }
       const networkError = axiosError as NetworkError;
       const errorCode: string | undefined = networkError.code;
-      console.error('Network Error:', {
-        message: typeof axiosError.message === 'string' ? axiosError.message : 'Unknown error',
-        code: errorCode,
-        config: {
-          url: axiosError.config?.url,
-          baseURL: axiosError.config?.baseURL,
-          method: axiosError.config?.method,
-        },
-      });
+      
+      // Don't log ERR_CANCELED errors as they're expected when navigating away or cancelling requests
+      if (errorCode !== 'ERR_CANCELED') {
+        console.error('Network Error:', {
+          message: typeof axiosError.message === 'string' ? axiosError.message : 'Unknown error',
+          code: errorCode,
+          config: {
+            url: axiosError.config?.url,
+            baseURL: axiosError.config?.baseURL,
+            method: axiosError.config?.method,
+          },
+        });
+      }
     }
 
     // ✅ Trả về Error hợp lệ cho Promise.reject
