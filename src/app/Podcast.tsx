@@ -31,7 +31,7 @@ export default function Podcast() {
       feed.author.toLowerCase().includes(query)
     );
   }, [searchQuery, feeds]);
-
+  
   return (
     <SafeAreaView className="flex-1 bg-[#13140e]" edges={['top']}>
       <View className="flex-1">
@@ -98,6 +98,22 @@ export default function Podcast() {
               key={feed.id}
               className="bg-[#13140e] h-[72px] mb-0 flex-row items-center"
               activeOpacity={0.7}
+              onPress={() => {
+                // Convert feed.id (string) to number for API
+                const feedIdNum = parseInt(feed.id, 10);
+                if (isNaN(feedIdNum)) {
+                  return;
+                }
+                router.push({
+                  pathname: '/Episode',
+                  params: {
+                    feedId: feedIdNum.toString(),
+                    feedTitle: feed.title,
+                    feedAuthor: feed.author,
+                    feedImage: feed.image ?? '',
+                  },
+                });
+              }}
             >
               {/* Podcast Image */}
               <View className="w-[59px] h-[59px] rounded-[3px] overflow-hidden mr-3">
@@ -167,8 +183,8 @@ export default function Podcast() {
                     <Text className="text-[#e7e9dd] text-[10px] font-bold" style={{ marginTop: 2 }}>
                       Setting
                     </Text>
-                  </TouchableOpacity>
-                </View>
+        </TouchableOpacity>
+      </View>
               </View>
             </View>
           </SafeAreaView>
