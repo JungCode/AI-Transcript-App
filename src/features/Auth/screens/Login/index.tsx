@@ -1,12 +1,13 @@
 import { useLoginUserLoginPost } from '@/shared/api/authSchemas';
+import logoSource from '@/shared/assets/images/icons/logo.svg';
+import { Button } from '@/shared/components/Button';
+import { Input } from '@/shared/components/Input';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
-import { Button } from '../../../../shared/components/Button';
-import { Input } from '../../../../shared/components/Input';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState<string>();
@@ -64,10 +65,7 @@ export default function LoginScreen() {
     >
       <View className="bg-surface h-full justify-center items-center gap-14 p-11">
         <View className="items-center">
-          <Image
-            source={require('@/shared/assets/images/icons/logo.svg')}
-            style={{ width: 87, height: 87 }}
-          />
+          <Image source={logoSource} style={{ width: 87, height: 87 }} />
           <Text className="font-black text-6xl text-white mt-3 font-nunito leading-tight">
             MIRAI
           </Text>
@@ -102,7 +100,7 @@ export default function LoginScreen() {
 
           <View className="flex-row justify-center gap-1">
             <Text className="text-white font-nunito font-medium text-sm">
-              Don't have account yet?
+              Don&apos;t have account yet?
             </Text>
 
             <Button

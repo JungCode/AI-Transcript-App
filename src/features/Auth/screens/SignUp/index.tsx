@@ -1,4 +1,5 @@
 import { useRegisterUserRegisterPost } from '@/shared/api/authSchemas';
+import logoSource from '@/shared/assets/images/icons/logo.svg';
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
@@ -64,10 +65,7 @@ export default function SignUpScreen() {
     >
       <View className="bg-surface h-full justify-center items-center gap-14 p-11">
         <View className="items-center">
-          <Image
-            source={require('@/shared/assets/images/icons/logo.svg')}
-            style={{ width: 87, height: 87 }}
-          />
+          <Image source={logoSource} style={{ width: 87, height: 87 }} />
           <Text className="font-black text-6xl text-white mt-3 font-nunito leading-tight">
             MIRAI
           </Text>
@@ -113,7 +111,7 @@ export default function SignUpScreen() {
               Already have an account?
             </Text>
 
-            <Button type="ghost" textClassName="text-sm" onPress={() => {}}>
+            <Button type="ghost" textClassName="text-sm">
               Log In
             </Button>
           </View>

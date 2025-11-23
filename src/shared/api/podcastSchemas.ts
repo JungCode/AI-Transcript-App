@@ -49,18 +49,18 @@ export interface ValidationError {
   type: string;
 }
 
-export type GetRecentFeedsFeedsGetParams = {
+export interface GetRecentFeedsFeedsGetParams {
   /**
    * Language code, e.g., 'en' or 'vi'
    */
   lang?: Lang;
   limit?: number;
   offset?: number;
-};
+}
 
-export type GetFeedEpisodesFeedsFeedIdEpisodesGetParams = {
+export interface GetFeedEpisodesFeedsFeedIdEpisodesGetParams {
   max_items?: number;
-};
+}
 
 /**
  * @summary Health

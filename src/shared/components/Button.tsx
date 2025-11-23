@@ -1,6 +1,7 @@
 import { Spinner } from '@/shared/components/Spinner';
-import EvilIcons from '@expo/vector-icons/EvilIcons';
-import { Text, TouchableOpacity, TouchableOpacityProps } from 'react-native';
+import type EvilIcons from '@expo/vector-icons/EvilIcons';
+import type { TouchableOpacityProps } from 'react-native';
+import { Text, TouchableOpacity } from 'react-native';
 
 interface IButton extends TouchableOpacityProps {
   type?: 'primary' | 'ghost';

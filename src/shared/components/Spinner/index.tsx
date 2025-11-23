@@ -2,8 +2,7 @@ import EvilIcons from '@expo/vector-icons/EvilIcons';
 import { useEffect, useRef } from 'react';
 import { Animated, Easing } from 'react-native';
 
-interface ISpinner
-  extends Omit<React.ComponentProps<typeof EvilIcons>, 'name'> {}
+type ISpinner = Omit<React.ComponentProps<typeof EvilIcons>, 'name'>;
 
 const Spinner = (props: ISpinner) => {
   const spinValue = useRef(new Animated.Value(0)).current;
@@ -17,7 +16,7 @@ const Spinner = (props: ISpinner) => {
         useNativeDriver: true,
       }),
     ).start();
-  }, []);
+  }, [spinValue]);
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1],

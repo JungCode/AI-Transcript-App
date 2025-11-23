@@ -28,7 +28,7 @@ export interface EpisodeCreate {
 
 export type EpisodeReadId = number | null;
 
-export type EpisodeReadTranscriptData = { [key: string]: unknown };
+export type EpisodeReadTranscriptData = Record<string, unknown>;
 
 export type EpisodeReadLanguage = string | null;
 

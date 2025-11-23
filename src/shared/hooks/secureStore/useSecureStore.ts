@@ -12,7 +12,7 @@ const useTokenChecker = () => {
       setLoading(false);
     };
 
-    checkAuth();
+    void checkAuth();
   }, []);
 
   return { isLoading, hasToken };

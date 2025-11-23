@@ -1,5 +1,7 @@
 import { applyGlobalFont } from '@/core/libs/font-patch';
 import '@/core/styles/global.css';
+import NunitoItalic from '@/shared/assets/fonts/Nunito-Italic-VariableFont_wght.ttf';
+import Nunito from '@/shared/assets/fonts/Nunito-VariableFont_wght.ttf';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -10,8 +12,8 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const [loaded] = useFonts({
-    Nunito: require('../shared/assets/fonts/Nunito-VariableFont_wght.ttf'),
-    NunitoItalic: require('../shared/assets/fonts/Nunito-Italic-VariableFont_wght.ttf'),
+    Nunito,
+    NunitoItalic,
   });
 
   if (!loaded) return null;
