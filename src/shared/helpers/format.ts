@@ -38,8 +38,18 @@ const formatDuration = (seconds: number): string => {
   return `${minutes} minute${minutes > 1 ? 's' : ''} ${remainingSeconds} second${remainingSeconds > 1 ? 's' : ''}`;
 };
 
+const formatDateOnly = (dateTime: string) => {
+  const d = new Date(dateTime);
+
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
 const formatStripHTML = (htmlString: string): string => {
   return htmlString.replace(/<\/?[^>]+(>|$)/g, '');
 };
 
-export { formatDate, formatDuration, formatStripHTML };
+export { formatDate, formatDateOnly, formatDuration, formatStripHTML };

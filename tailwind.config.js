@@ -61,6 +61,7 @@ module.exports = {
           soft: '#E7E9DD',
           muted: '#979989',
           inverse: '#13140E',
+          lime: '#C2F590',
         },
 
         success: '#4CAF50',
@@ -71,6 +72,9 @@ module.exports = {
       borderRadius: {
         xl: '10px',
         '2xl': '20px',
+      },
+      height: {
+        49: '12.5rem',
       },
     },
   },

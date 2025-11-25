@@ -46,6 +46,12 @@ export interface HTTPValidationError {
   detail?: ValidationError[];
 }
 
+export interface RecentEpisodeRead {
+  episode_id: number;
+  updated_at: string;
+  created_at: string;
+}
+
 export interface SentenceTranslationRead {
   translated_sentence: string;
 }
@@ -201,7 +207,7 @@ export function useHealth<
  * @summary Get User Episode Ids
  */
 export const getUserEpisodeIds = (signal?: AbortSignal) => {
-  return apiClient<number[]>({
+  return apiClient<RecentEpisodeRead[]>({
     url: `/ai-translator/user/episodeIds`,
     method: 'GET',
     signal,

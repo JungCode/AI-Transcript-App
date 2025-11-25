@@ -34,8 +34,8 @@ const PodcastScreen = () => {
       </View>
 
       {/* Search Bar */}
-      <View className="px-[34px] mb-4">
-        <View className="bg-surface-darkest h-[47px] rounded-[20px] flex-row items-center px-4">
+      <View className="px-6 mb-4">
+        <View className="bg-surface-darkest h-[47px] rounded-3xl flex-row items-center px-4">
           <Ionicons name="search" size={20} color="#979989" />
           <TextInput
             className="flex-1 ml-3 text-white text-[16px] font-nunito"
@@ -50,7 +50,7 @@ const PodcastScreen = () => {
       {/* Podcast List */}
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 34, paddingBottom: 120 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
         <FeedList

@@ -15,17 +15,17 @@ const NAVIGATION_TABS: {
 }[] = [
   {
     name: 'Home',
-    icon: <Ionicons name="home" size={18} color="#e7e9dd" />,
+    icon: <Ionicons name="home" size={21} color="#e7e9dd" />,
     path: DashBoardPath.HOME,
   },
   {
     name: 'Podcast',
-    icon: <MaterialIcons name="podcasts" size={18} color="#e7e9dd" />,
+    icon: <MaterialIcons name="podcasts" size={21} color="#e7e9dd" />,
     path: DashBoardPath.PODCAST,
   },
   {
     name: 'Setting',
-    icon: <Ionicons name="settings-sharp" size={18} color="#e7e9dd" />,
+    icon: <Ionicons name="settings-sharp" size={21} color="#e7e9dd" />,
     path: DashBoardPath.SETTING,
   },
 ];
@@ -39,7 +39,7 @@ const BottomNavigation = () => {
     const targetIndex = getTabIndex(path);
 
     if (currentIndex === targetIndex) {
-      return; // Already on this tab
+      return;
     }
 
     // Use replace to avoid stacking screens
@@ -60,7 +60,7 @@ const BottomNavigation = () => {
           className="bg-mirai-bgDeep border border-mirai-borderDark rounded-3xl py-3"
           style={{ width: 200 }}
         >
-          <View className="flex-row items-center justify-around px-4">
+          <View className="flex-row items-center justify-around px-3">
             {NAVIGATION_TABS.map((tab, index) => {
               const isActive = getTabIndex(pathname as DashBoardPath) === index;
 
@@ -71,11 +71,11 @@ const BottomNavigation = () => {
                   onPress={() => navigateTo(tab.path)}
                 >
                   <View
-                    className={`${isActive ? 'bg-mirai-greenDark' : ''} rounded-[5px] p-1.5 items-center justify-center`}
+                    className={`${isActive ? 'bg-mirai-greenDark' : ''} rounded-md py-1 px-3 items-center justify-center`}
                   >
                     {tab.icon}
                   </View>
-                  <Text className="text-text-soft text-[10px] font-bold">
+                  <Text className="text-text-soft text-sm font-bold font-nunito ">
                     {tab.name}
                   </Text>
                 </TouchableOpacity>
