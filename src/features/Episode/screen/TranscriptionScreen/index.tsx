@@ -1,53 +1,18 @@
 import { Button } from '@/core/components';
-import { AudioPlayer } from '@/features/Episode/components/AudioPlayer';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useAudioPlayer } from 'expo-audio';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
-
-enum AudioFunctionName {
-  PIN = 'Pin',
-  EXPLAIN = 'Explain',
-  REPEAT = 'Repeat',
-  SPEED = 'Speed',
-  PLAY = 'Play',
-}
-
-interface IAudioFunctionButton {
-  icon: React.ReactNode;
-  onPress?: () => void;
-  name: AudioFunctionName;
-}
-
-const AUDIO_FUNCTION_BUTTONS: IAudioFunctionButton[] = [
-  {
-    icon: <MaterialCommunityIcons name="pin" size={24} color="white" />,
-    name: AudioFunctionName.PIN,
-  },
-  {
-    icon: (
-      <MaterialCommunityIcons
-        name="comment-text-outline"
-        size={24}
-        color="white"
-      />
-    ),
-    name: AudioFunctionName.EXPLAIN,
-  },
-  {
-    icon: <MaterialIcons name="repeat" size={24} color="white" />,
-    name: AudioFunctionName.REPEAT,
-  },
-  {
-    icon: <MaterialCommunityIcons name="speedometer" size={24} color="white" />,
-    name: AudioFunctionName.SPEED,
-  },
-  {
-    icon: <Ionicons name="stop-circle" size={24} color="white" />,
-    name: AudioFunctionName.PLAY,
-  },
-];
+import { AudioPlayer } from './components/AudioPlayer';
+import { TranscriptScrollView } from './components/TranscriptScrollView';
+import {
+  AUDIO_FUNCTION_BUTTON_COMPONENTS,
+  AudioFunctionName,
+} from './constants';
+import { getButtonFunctionByName } from './helpers/AudioButton';
+import { useAudioPlayerStatusCustom } from './hooks/useAudioPlayerStatusCustom';
 
 const TranscriptionScreen = () => {
   const { episodeUrl, episodeTitle, feedTitle } = useLocalSearchParams<{
@@ -57,31 +22,11 @@ const TranscriptionScreen = () => {
     feedTitle?: string;
   }>();
 
-  const getButtonFunctionByName = ({
-    name,
-    handlePlayPause,
-  }: {
-    name: AudioFunctionName;
-    handlePlayPause: () => void;
-  }) => {
-    switch (name) {
-      case AudioFunctionName.PIN:
-        break;
-      case AudioFunctionName.EXPLAIN:
-        break;
-      case AudioFunctionName.REPEAT:
-        break;
-      case AudioFunctionName.SPEED:
-        break;
-      case AudioFunctionName.PLAY:
-        return handlePlayPause;
-      default:
-        break;
-    }
-  };
+  const player = useAudioPlayer(episodeUrl);
+  const status = useAudioPlayerStatusCustom(player);
 
   return (
-    <View className="flex-1 bg-surface px-6">
+    <View className="flex-1 bg-surface px-4">
       <View className="flex-row items-center justify-between gap-5">
         <TouchableOpacity
           onPress={() => {
@@ -126,13 +71,19 @@ const TranscriptionScreen = () => {
         />
       </View>
 
+      <TranscriptScrollView
+        episodeUrl={episodeUrl}
+        episodeId={39416311028}
+        audioStatus={status}
+      />
+
       <View className="absolute bottom-10 left-0 right-0 px-4">
-        <View className=" bg-mirai-bgDeep rounded-3xl shadow-xl p-5">
-          <AudioPlayer audioUrl={episodeUrl} className="gap-4">
+        <View className=" bg-mirai-bgDeep border border-mirai-borderDark rounded-3xl shadow-xl p-5">
+          <AudioPlayer player={player} status={status} className="gap-4">
             {({ handlePlayPause, status }) => (
               <View className="flex-row justify-between items-center">
                 <View className="flex-row gap-3">
-                  {AUDIO_FUNCTION_BUTTONS.map((button, index) => (
+                  {AUDIO_FUNCTION_BUTTON_COMPONENTS.map((button, index) => (
                     <TouchableOpacity
                       key={index}
                       onPress={getButtonFunctionByName({

@@ -1,5 +1,6 @@
 import { useGetFeedEpisodes } from '@/shared/api/podcastSchemas';
 import {
+  DurationFormat,
   formatDate,
   formatDuration,
   formatStripHTML,
@@ -14,7 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import type { ITranscriptionScreenParams } from '../constants';
+import type { ITranscriptionScreenParams } from './TranscriptionScreen/constants';
 
 const EpisodeListScreen = () => {
   const { feedId, feedAuthor, feedImage, feedTitle } = useLocalSearchParams<{
@@ -200,7 +201,7 @@ const EpisodeListScreen = () => {
 
                   {episode.duration && (
                     <Text className="text-primary text-[14px] font-bold font-nunito">
-                      {formatDuration(episode.duration)}
+                      {formatDuration(episode.duration, DurationFormat.Verbose)}
                     </Text>
                   )}
                 </View>

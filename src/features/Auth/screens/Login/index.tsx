@@ -13,33 +13,6 @@ export default function LoginScreen() {
   const [email, setEmail] = useState<string>();
   const [password, setPassword] = useState<string>();
 
-  const handleChangeEmail = (value: string) => {
-    setEmail(value);
-  };
-
-  const handleChangePassword = (value: string) => {
-    setPassword(value);
-  };
-
-  const onSubmit = () => {
-    if (!email || !password) return;
-
-    loginMutate({
-      data: {
-        email,
-        password,
-      },
-    });
-  };
-
-  const handleGoToRegister = () => {
-    router.push('/register');
-  };
-
-  const handleGoToHome = () => {
-    router.replace('/dashboard/home');
-  };
-
   const { mutate: loginMutate, isPending: isLoading } = useLoginUser({
     mutation: {
       onSuccess: async response => {
@@ -61,6 +34,33 @@ export default function LoginScreen() {
       },
     },
   });
+
+  const onSubmit = () => {
+    if (!email || !password) return;
+
+    loginMutate({
+      data: {
+        email,
+        password,
+      },
+    });
+  };
+
+  const handleChangeEmail = (value: string) => {
+    setEmail(value);
+  };
+
+  const handleChangePassword = (value: string) => {
+    setPassword(value);
+  };
+
+  const handleGoToRegister = () => {
+    router.push('/register');
+  };
+
+  const handleGoToHome = () => {
+    router.replace('/dashboard/home');
+  };
 
   return (
     <KeyboardAwareScrollView

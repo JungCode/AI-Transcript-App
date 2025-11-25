@@ -1,3 +1,4 @@
+import { setSecureItem } from '@/shared/utlis/storage';
 import {
   Ionicons,
   MaterialCommunityIcons,
@@ -86,6 +87,10 @@ export default function Setting() {
                 </Text>
               </View>
               <TouchableOpacity
+                onPress={async () => {
+                  await setSecureItem('access_token', '');
+                  router.replace('/login');
+                }}
                 className="bg-[#4a6b2a] rounded-[8px] px-4 py-2"
                 activeOpacity={0.7}
               >
