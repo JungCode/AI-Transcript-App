@@ -1,9 +1,5 @@
-import { Text, View } from 'react-native';
+import { HomeScreen } from '@/features/Dashboard/screens/Home';
 
 export default function HomeRoute() {
-  return (
-    <View>
-      <Text>Mirai ai home </Text>
-    </View>
-  );
+  return <HomeScreen />;
 }

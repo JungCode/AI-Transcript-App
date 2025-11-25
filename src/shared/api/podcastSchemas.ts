@@ -18,19 +18,42 @@ import type {
 } from '@tanstack/react-query';
 
 import { apiClient } from './apiClient';
+export type EpisodeReadImageUrl = string | null;
+
 export type EpisodeReadEpisode = number | null;
 
 export interface EpisodeRead {
   enclosure_url: string;
   enclosure_type: string;
   duration: number;
+  feed_language: string;
+  image_url?: EpisodeReadImageUrl;
   episode?: EpisodeReadEpisode;
   episode_type: string;
-  feed_language: string;
   episode_title: string;
   episode_description: string;
   episode_pub_date: number;
   id: string;
+}
+
+export type EpisodeRecentReadImageUrl = string | null;
+
+export type EpisodeRecentReadEpisode = number | null;
+
+export interface EpisodeRecentRead {
+  enclosure_url: string;
+  enclosure_type: string;
+  duration: number;
+  feed_language: string;
+  image_url?: EpisodeRecentReadImageUrl;
+  episode?: EpisodeRecentReadEpisode;
+  episode_type: string;
+  episode_title: string;
+  episode_description: string;
+  episode_pub_date: number;
+  id: string;
+  updated_at: string;
+  created_at: string;
 }
 
 export type FeedReadImage = string | null;
@@ -510,10 +533,10 @@ export function useGetFeedEpisodes<
 }
 
 /**
- * @summary Get Episodes By Ids
+ * @summary Get User Episodes
  */
 export const getUserEpisodes = (signal?: AbortSignal) => {
-  return apiClient<EpisodeRead[]>({
+  return apiClient<EpisodeRecentRead[]>({
     url: `/podcast/user/episodes`,
     method: 'GET',
     signal,
@@ -620,7 +643,7 @@ export function useGetUserEpisodes<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary Get Episodes By Ids
+ * @summary Get User Episodes
  */
 
 export function useGetUserEpisodes<
