@@ -15,12 +15,13 @@ import { getButtonFunctionByName } from './helpers/AudioButton';
 import { useAudioPlayerStatusCustom } from './hooks/useAudioPlayerStatusCustom';
 
 const TranscriptionScreen = () => {
-  const { episodeUrl, episodeTitle, feedTitle } = useLocalSearchParams<{
-    episodeId: string;
-    episodeUrl: string;
-    episodeTitle: string;
-    feedTitle?: string;
-  }>();
+  const { episodeUrl, episodeTitle, feedTitle, episodeId } =
+    useLocalSearchParams<{
+      episodeId: string;
+      episodeUrl: string;
+      episodeTitle: string;
+      feedTitle?: string;
+    }>();
 
   const player = useAudioPlayer(episodeUrl);
   const status = useAudioPlayerStatusCustom(player);
@@ -73,7 +74,7 @@ const TranscriptionScreen = () => {
 
       <TranscriptScrollView
         episodeUrl={episodeUrl}
-        episodeId={39416311028}
+        episodeId={Number(episodeId)}
         audioStatus={status}
       />
 

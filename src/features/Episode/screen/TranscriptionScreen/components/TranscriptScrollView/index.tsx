@@ -70,6 +70,7 @@ const TranscriptScrollView = ({
                 const isCurrentlyPlayingWord =
                   audioStatus.currentTime >= startSec &&
                   audioStatus.currentTime <= endSec;
+
                 return (
                   <Text
                     key={wordIndex}

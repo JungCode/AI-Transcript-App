@@ -1,11 +1,11 @@
-import type { AudioPlayer} from 'expo-audio';
+import type { AudioPlayer } from 'expo-audio';
 import { useAudioPlayerStatus } from 'expo-audio';
 import { useEffect, useState } from 'react';
 
-const useAudioPlayerStatusCustom = (player: AudioPlayer) => {
+const useAudioPlayerStatusCustom = (player: AudioPlayer, interval = 16) => {
   const defaultStatus = useAudioPlayerStatus(player);
 
-  // Custom hook for more frequent updates (every 100ms instead of 500ms)
+  // Custom hook for more frequent updates (default 16ms ≈ 60fps)
   const [status, setStatus] = useState(defaultStatus);
 
   useEffect(() => {
@@ -14,15 +14,15 @@ const useAudioPlayerStatusCustom = (player: AudioPlayer) => {
       return;
     }
 
-    const interval = setInterval(() => {
+    const timer = setInterval(() => {
       setStatus({
         ...defaultStatus,
         currentTime: player.currentTime,
       });
-    }, 50);
+    }, interval);
 
-    return () => clearInterval(interval);
-  }, [player, defaultStatus.playing, defaultStatus]);
+    return () => clearInterval(timer);
+  }, [player, defaultStatus.playing, defaultStatus, interval]);
 
   return status;
 };
