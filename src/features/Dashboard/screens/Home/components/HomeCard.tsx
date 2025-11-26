@@ -27,7 +27,6 @@ const HomeCard = () => {
     episodeTitle,
     feedTitle,
   }: ITranscriptionScreenParams) => {
-    console.log(episodeId);
     router.push({
       pathname: '/episode/transcription',
       params: {
@@ -86,10 +85,11 @@ const HomeCard = () => {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 120 }}
       showsHorizontalScrollIndicator={false}
     >
-      {Object.entries(groupedEpisodes).map(([date, episodes]) => (
-        <View className="last:pb-32" key={date}>
+      {Object.entries(groupedEpisodes).map(([date, episodes], index) => (
+        <View key={date}>
           <Text className="text-text-lime text-lg font-bold font-nunito mt-8 mb-3 pl-2">
             {date}
           </Text>

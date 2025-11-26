@@ -1,20 +1,26 @@
 import { useGetTranscriptByEpisodeId } from '@/shared/api/ai-translatorSchemas';
-import type { AudioStatus } from 'expo-audio';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
+import type { AudioPlayer, AudioStatus } from 'expo-audio';
+import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
 import type { TranscriptData } from '../../constants/transcript';
+import { useFlashListScroll } from '../../hooks/useFlashListScroll';
+import { Word } from './Word';
 
 interface ITranscriptScrollViewProps {
   episodeId: number;
   episodeUrl: string;
   audioStatus: AudioStatus;
+  player: AudioPlayer;
 }
 
 const TranscriptScrollView = ({
   episodeId,
   episodeUrl,
   audioStatus,
+  player,
 }: ITranscriptScrollViewProps) => {
   // const { mutate: createTranscript } = useCreateTranscript();
+
   const { data, isLoading } = useGetTranscriptByEpisodeId(episodeId, {
     query: {
       enabled: !!episodeId,
@@ -33,6 +39,22 @@ const TranscriptScrollView = ({
   //   });
   // };
 
+  const { listRef } = useFlashListScroll({
+    currentTime: audioStatus.currentTime,
+    transcriptSegments,
+    scrollCallback: async (listRef, index) => {
+      const isLastItems = index > transcriptSegments.length - 4;
+
+      if (isLastItems) return;
+
+      await listRef.current?.scrollToIndex({
+        index: index,
+        animated: true,
+        viewPosition: isLastItems ? 0 : 0.3,
+      });
+    },
+  });
+
   if (isLoading) {
     return (
       <ActivityIndicator
@@ -44,54 +66,52 @@ const TranscriptScrollView = ({
   }
 
   return (
-    <ScrollView
-      className="w-full min-h-full pt-3"
-      showsVerticalScrollIndicator={false}
-      showsHorizontalScrollIndicator={false}
-    >
-      {transcriptSegments.map((segment, index) => {
-        const startSec = segment.start;
-        const endSec = segment.end;
-
-        const isCurrentlyPlayingSegment =
-          audioStatus.currentTime >= startSec &&
-          audioStatus.currentTime <= endSec;
+    <FlashList
+      ref={listRef}
+      data={transcriptSegments}
+      renderItem={({ item: currentSegment }) => {
+        const currentTime = audioStatus.currentTime;
+        const isActive =
+          currentTime >= currentSegment.start &&
+          currentTime <= currentSegment.end;
 
         return (
           <View
-            key={index}
-            className={`${isCurrentlyPlayingSegment ? 'bg-surface-deep' : ''} rounded-3xl p-4 gap-2 mb-4`}
+            className={`${
+              isActive ? 'bg-surface-deep' : ''
+            } rounded-3xl p-4 gap-2 mb-4`}
           >
-            <View className="flex-row flex-wrap gap-2">
-              {segment?.words?.map((wordData, wordIndex) => {
-                const startSec = wordData.start;
-                const endSec = wordData.end;
+            <TouchableOpacity
+              onPress={() => player.seekTo(currentSegment.start + 0.01)}
+            >
+              <View className="flex-row flex-wrap gap-2">
+                {currentSegment.words.map((word, index: number) => {
+                  let wordActive = false;
 
-                const isCurrentlyPlayingWord =
-                  audioStatus.currentTime >= startSec &&
-                  audioStatus.currentTime <= endSec;
+                  if (isActive) {
+                    wordActive =
+                      currentTime >= word.start && currentTime <= word.end;
+                  }
 
-                return (
-                  <Text
-                    key={wordIndex}
-                    className={`text-white text-center font-nunito font-bold text-lg border-2 
-                ${isCurrentlyPlayingWord ? 'border-success' : 'border-transparent'} rounded-lg px-1 `}
-                  >
-                    {wordData.word}
-                  </Text>
-                );
-              })}
-            </View>
-            <View>
-              <Text className="text-text-muted text-base font-nunito font-semibold">
-                Nếu bạn muốn mình viết wrapper tự động để không phải sửa từng
-                query một thì mình có thể làm luôn.
-              </Text>
-            </View>
+                  return (
+                    <Word
+                      player={player}
+                      key={index}
+                      word={word}
+                      isActive={wordActive}
+                    />
+                  );
+                })}
+              </View>
+            </TouchableOpacity>
           </View>
         );
-      })}
-    </ScrollView>
+      }}
+      className="w-full min-h-full pt-3"
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 200 }}
+      showsHorizontalScrollIndicator={false}
+    />
   );
 };
 

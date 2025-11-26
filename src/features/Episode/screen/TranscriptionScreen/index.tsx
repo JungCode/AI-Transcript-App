@@ -73,6 +73,7 @@ const TranscriptionScreen = () => {
       </View>
 
       <TranscriptScrollView
+        player={player}
         episodeUrl={episodeUrl}
         episodeId={Number(episodeId)}
         audioStatus={status}
