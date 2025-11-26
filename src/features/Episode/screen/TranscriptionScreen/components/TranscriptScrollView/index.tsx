@@ -1,9 +1,9 @@
+import type { TranscriptData } from '@/features/Episode/screen/TranscriptionScreen/constants/transcript';
+import { useFlashListScroll } from '@/features/Episode/screen/TranscriptionScreen/hooks/useFlashListScroll';
 import { useGetTranscriptByEpisodeId } from '@/shared/api/ai-translatorSchemas';
 import { FlashList } from '@shopify/flash-list';
 import type { AudioPlayer, AudioStatus } from 'expo-audio';
 import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
-import type { TranscriptData } from '../../constants/transcript';
-import { useFlashListScroll } from '../../hooks/useFlashListScroll';
 import { Word } from './Word';
 
 interface ITranscriptScrollViewProps {
@@ -15,7 +15,7 @@ interface ITranscriptScrollViewProps {
 
 const TranscriptScrollView = ({
   episodeId,
-  episodeUrl,
+  // episodeUrl,
   audioStatus,
   player,
 }: ITranscriptScrollViewProps) => {
