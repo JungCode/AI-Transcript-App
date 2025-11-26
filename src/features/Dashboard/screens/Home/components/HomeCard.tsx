@@ -1,12 +1,7 @@
 import type { ITranscriptionScreenParams } from '@/features/Episode/screen/TranscriptionScreen/constants';
-import type { EpisodeRecentRead } from '@/shared/api/podcastSchemas';
 import { useGetUserEpisodes } from '@/shared/api/podcastSchemas';
 import logoSource from '@/shared/assets/images/icons/logo.svg';
-import {
-  DurationFormat,
-  formatDateOnly,
-  formatDuration,
-} from '@/shared/helpers/format';
+import { DurationFormat, formatDuration } from '@/shared/helpers/format';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -17,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { groupEpisodesByDate, sortEpisodes } from '../helpers';
 
 const HomeCard = () => {
   const { data: userEpisodes, isLoading } = useGetUserEpisodes();
@@ -68,19 +64,8 @@ const HomeCard = () => {
     );
   }
 
-  const groupedEpisodes = userEpisodes.reduce(
-    (groups, episode) => {
-      const date = formatDateOnly(
-        episode.updated_at || episode.created_at || '',
-      );
-      if (!groups[date]) {
-        groups[date] = [];
-      }
-      groups[date].push(episode);
-      return groups;
-    },
-    {} as Record<string, EpisodeRecentRead[]>,
-  );
+  const sorted = sortEpisodes(userEpisodes ?? []);
+  const groupedEpisodes = groupEpisodesByDate(sorted);
 
   return (
     <ScrollView
