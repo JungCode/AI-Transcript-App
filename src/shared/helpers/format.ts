@@ -5,8 +5,14 @@ export enum DurationFormat {
 
 const formatDate = (dateString?: number): string => {
   if (!dateString) return '';
+
   try {
-    const date = new Date(dateString);
+    const ts = Number(dateString);
+
+    if (isNaN(ts)) return '';
+
+    const date = new Date(ts * 1000);
+
     const months = [
       'January',
       'February',
@@ -21,12 +27,14 @@ const formatDate = (dateString?: number): string => {
       'November',
       'December',
     ];
+
     const month = months[date.getMonth()];
     const day = date.getDate();
     const year = date.getFullYear();
+
     return `${month} ${day}, ${year}`;
   } catch {
-    return dateString.toString();
+    return dateString?.toString() ?? '';
   }
 };
 

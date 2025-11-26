@@ -52,8 +52,18 @@ export interface RecentEpisodeRead {
   created_at: string;
 }
 
-export interface SentenceTranslationRead {
-  translated_sentence: string;
+export interface SentenceTranslationItem {
+  sentence: string;
+  sentence_id: number;
+}
+
+export interface SentenceTranslationListRead {
+  translated_sentence_list: string[];
+}
+
+export interface SentenceTranslationListUpdate {
+  data: SentenceTranslationItem[];
+  episode_id: number;
 }
 
 export type Status = (typeof Status)[keyof typeof Status];
@@ -755,188 +765,87 @@ export function useTranslateWord<
  * @summary Translate Sentence
  */
 export const translateSentence = (
-  sentence: string,
-  sentenceId: number,
-  episodeId: number,
+  sentenceTranslationListUpdate: SentenceTranslationListUpdate,
   signal?: AbortSignal,
 ) => {
-  return apiClient<SentenceTranslationRead>({
-    url: `/ai-translator/translate/sentence/${sentence}/sentenceId/${sentenceId}/episodeId/${episodeId}`,
-    method: 'GET',
+  return apiClient<SentenceTranslationListRead>({
+    url: `/ai-translator/translate/sentence`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: sentenceTranslationListUpdate,
     signal,
   });
 };
 
-export const getTranslateSentenceQueryKey = (
-  sentence?: string,
-  sentenceId?: number,
-  episodeId?: number,
-) => {
-  return [`/ai-translator/translate/sentence/${sentence}/sentenceId/${sentenceId}/episodeId/${episodeId}`,
-  ] as const;
-};
-
-export const getTranslateSentenceQueryOptions = <
-  TData = Awaited<ReturnType<typeof translateSentence>>,
+export const getTranslateSentenceMutationOptions = <
   TError = HTTPValidationError,
->(
-  sentence: string,
-  sentenceId: number,
-  episodeId: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof translateSentence>>,
-        TError,
-        TData
-      >
-    >;
-  },
-) => {
-  const { query: queryOptions } = options ?? {};
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getTranslateSentenceQueryKey(sentence, sentenceId, episodeId);
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof translateSentence>>
-  > = ({ signal }) =>
-    translateSentence(sentence, sentenceId, episodeId, signal);
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!(sentence && sentenceId && episodeId),
-    ...queryOptions,
-  } as UseQueryOptions<
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof translateSentence>>,
     TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
+    { data: SentenceTranslationListUpdate },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof translateSentence>>,
+  TError,
+  { data: SentenceTranslationListUpdate },
+  TContext
+> => {
+  const mutationKey = ['translateSentence'];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof translateSentence>>,
+    { data: SentenceTranslationListUpdate }
+  > = props => {
+    const { data } = props ?? {};
+
+    return translateSentence(data);
+  };
+
+  return { mutationFn, ...mutationOptions };
 };
 
-export type TranslateSentenceQueryResult = NonNullable<
+export type TranslateSentenceMutationResult = NonNullable<
   Awaited<ReturnType<typeof translateSentence>>
 >;
-export type TranslateSentenceQueryError = HTTPValidationError;
+export type TranslateSentenceMutationBody = SentenceTranslationListUpdate;
+export type TranslateSentenceMutationError = HTTPValidationError;
 
-export function useTranslateSentence<
-  TData = Awaited<ReturnType<typeof translateSentence>>,
-  TError = HTTPValidationError,
->(
-  sentence: string,
-  sentenceId: number,
-  episodeId: number,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof translateSentence>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof translateSentence>>,
-          TError,
-          Awaited<ReturnType<typeof translateSentence>>
-        >,
-        'initialData'
-      >;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useTranslateSentence<
-  TData = Awaited<ReturnType<typeof translateSentence>>,
-  TError = HTTPValidationError,
->(
-  sentence: string,
-  sentenceId: number,
-  episodeId: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof translateSentence>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof translateSentence>>,
-          TError,
-          Awaited<ReturnType<typeof translateSentence>>
-        >,
-        'initialData'
-      >;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useTranslateSentence<
-  TData = Awaited<ReturnType<typeof translateSentence>>,
-  TError = HTTPValidationError,
->(
-  sentence: string,
-  sentenceId: number,
-  episodeId: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof translateSentence>>,
-        TError,
-        TData
-      >
-    >;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
 /**
  * @summary Translate Sentence
  */
-
-export function useTranslateSentence<
-  TData = Awaited<ReturnType<typeof translateSentence>>,
+export const useTranslateSentence = <
   TError = HTTPValidationError,
+  TContext = unknown,
 >(
-  sentence: string,
-  sentenceId: number,
-  episodeId: number,
   options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof translateSentence>>,
-        TError,
-        TData
-      >
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof translateSentence>>,
+      TError,
+      { data: SentenceTranslationListUpdate },
+      TContext
     >;
   },
   queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getTranslateSentenceQueryOptions(
-    sentence,
-    sentenceId,
-    episodeId,
-    options,
-  );
+): UseMutationResult<
+  Awaited<ReturnType<typeof translateSentence>>,
+  TError,
+  { data: SentenceTranslationListUpdate },
+  TContext
+> => {
+  const mutationOptions = getTranslateSentenceMutationOptions(options);
 
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
+  return useMutation(mutationOptions, queryClient);
+};
 
 /**
  * @summary Stream Transcript Progress

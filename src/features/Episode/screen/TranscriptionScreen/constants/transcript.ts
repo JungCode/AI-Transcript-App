@@ -10,6 +10,7 @@ export interface TranscriptSegment {
   end: number;
   text: string;
   words: TranscriptWord[];
+  translated_sentence?: string;
 }
 
 export interface TranscriptContent {

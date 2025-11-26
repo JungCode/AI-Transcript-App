@@ -21,15 +21,15 @@ export default function LoginScreen() {
 
         Toast.show({
           type: 'success',
-          text1: 'Đăng nhập thành công 🎉',
-          text2: 'Chào mừng bạn quay trở lại!',
+          text1: 'Login successful! 🎉',
+          text2: 'Welcome back!',
         });
       },
       onError: () => {
         Toast.show({
           type: 'error',
-          text1: 'Đăng nhập thất bại',
-          text2: 'Email hoặc mật khẩu sai rồi!',
+          text1: 'Login failed',
+          text2: 'Incorrect email or password!',
         });
       },
     },
