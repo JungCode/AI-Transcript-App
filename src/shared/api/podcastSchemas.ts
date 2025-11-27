@@ -22,6 +22,8 @@ export type EpisodeReadImageUrl = string | null;
 
 export type EpisodeReadEpisode = number | null;
 
+export type EpisodeReadEpisodeType = string | null;
+
 export interface EpisodeRead {
   enclosure_url: string;
   enclosure_type: string;
@@ -29,7 +31,7 @@ export interface EpisodeRead {
   feed_language: string;
   image_url?: EpisodeReadImageUrl;
   episode?: EpisodeReadEpisode;
-  episode_type: string;
+  episode_type?: EpisodeReadEpisodeType;
   episode_title: string;
   episode_description: string;
   episode_pub_date: number;
@@ -40,6 +42,8 @@ export type EpisodeRecentReadImageUrl = string | null;
 
 export type EpisodeRecentReadEpisode = number | null;
 
+export type EpisodeRecentReadEpisodeType = string | null;
+
 export interface EpisodeRecentRead {
   enclosure_url: string;
   enclosure_type: string;
@@ -47,7 +51,7 @@ export interface EpisodeRecentRead {
   feed_language: string;
   image_url?: EpisodeRecentReadImageUrl;
   episode?: EpisodeRecentReadEpisode;
-  episode_type: string;
+  episode_type?: EpisodeRecentReadEpisodeType;
   episode_title: string;
   episode_description: string;
   episode_pub_date: number;

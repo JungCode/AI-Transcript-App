@@ -9,6 +9,7 @@ interface IButton extends TouchableOpacityProps {
   isLoading?: boolean;
   textClassName?: string;
   loadingIconProps?: ActivityIndicatorProps;
+  numberOfLines?: number;
 }
 
 const buttonVariants: Record<NonNullable<IButton['type']>, string> = {
@@ -28,6 +29,7 @@ const Button = ({
   textClassName,
   isLoading,
   loadingIconProps,
+  numberOfLines,
   ...rest
 }: IButton) => {
   const baseClass = buttonVariants[type];
@@ -40,6 +42,7 @@ const Button = ({
     >
       {isLoading && <ActivityIndicator color="white" {...loadingIconProps} />}
       <Text
+        numberOfLines={numberOfLines}
         className={`text-primary font-bold text-lg font-nunito ${textClassName}`}
       >
         {children}

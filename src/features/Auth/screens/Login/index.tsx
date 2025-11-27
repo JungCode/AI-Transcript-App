@@ -13,13 +13,27 @@ export default function LoginScreen() {
   const [email, setEmail] = useState<string>();
   const [password, setPassword] = useState<string>();
 
-  const handleChangeEmail = (value: string) => {
-    setEmail(value);
-  };
+  const { mutate: loginMutate, isPending: isLoading } = useLoginUser({
+    mutation: {
+      onSuccess: async response => {
+        await setSecureItem('access_token', response.access_token);
+        handleGoToHome();
 
-  const handleChangePassword = (value: string) => {
-    setPassword(value);
-  };
+        Toast.show({
+          type: 'success',
+          text1: 'Login successful! 🎉',
+          text2: 'Welcome back!',
+        });
+      },
+      onError: () => {
+        Toast.show({
+          type: 'error',
+          text1: 'Login failed',
+          text2: 'Incorrect email or password!',
+        });
+      },
+    },
+  });
 
   const onSubmit = () => {
     if (!email || !password) return;
@@ -32,6 +46,14 @@ export default function LoginScreen() {
     });
   };
 
+  const handleChangeEmail = (value: string) => {
+    setEmail(value);
+  };
+
+  const handleChangePassword = (value: string) => {
+    setPassword(value);
+  };
+
   const handleGoToRegister = () => {
     router.push('/register');
   };
@@ -39,28 +61,6 @@ export default function LoginScreen() {
   const handleGoToHome = () => {
     router.replace('/dashboard/home');
   };
-
-  const { mutate: loginMutate, isPending: isLoading } = useLoginUser({
-    mutation: {
-      onSuccess: async response => {
-        await setSecureItem('access_token', response.access_token);
-        handleGoToHome();
-
-        Toast.show({
-          type: 'success',
-          text1: 'Đăng nhập thành công 🎉',
-          text2: 'Chào mừng bạn quay trở lại!',
-        });
-      },
-      onError: () => {
-        Toast.show({
-          type: 'error',
-          text1: 'Đăng nhập thất bại',
-          text2: 'Email hoặc mật khẩu sai rồi!',
-        });
-      },
-    },
-  });
 
   return (
     <KeyboardAwareScrollView

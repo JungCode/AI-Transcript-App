@@ -18,15 +18,15 @@ export default function SignUpScreen() {
       onSuccess: () => {
         Toast.show({
           type: 'success',
-          text1: 'Đăng ký thành công 🎉',
-          text2: 'Chào mừng bạn!',
+          text1: 'Registration successful! 🎉',
+          text2: 'Welcome!',
         });
       },
       onError: () => {
         Toast.show({
           type: 'error',
-          text1: 'Đăng ký thất bại',
-          text2: 'Email hoặc mật khẩu không hợp lệ!',
+          text1: 'Registration failed',
+          text2: 'Invalid email or password!',
         });
       },
     },

@@ -1,16 +1,38 @@
-import type {
-  EpisodeRecentRead} from '@/shared/api/podcastSchemas';
-import {
-  useGetUserEpisodes,
-} from '@/shared/api/podcastSchemas';
+import type { ITranscriptionScreenParams } from '@/features/Episode/screen/TranscriptionScreen/constants';
+import { useGetUserEpisodes } from '@/shared/api/podcastSchemas';
 import logoSource from '@/shared/assets/images/icons/logo.svg';
-import { formatDateOnly, formatDuration } from '@/shared/helpers/format';
+import { DurationFormat, formatDuration } from '@/shared/helpers/format';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { groupEpisodesByDate, sortEpisodes } from '../helpers';
 
 const HomeCard = () => {
   const { data: userEpisodes, isLoading } = useGetUserEpisodes();
+
+  const handleGoToTranscription = ({
+    episodeId,
+    episodeUrl,
+    episodeTitle,
+    feedTitle,
+  }: ITranscriptionScreenParams) => {
+    router.push({
+      pathname: '/episode/transcription',
+      params: {
+        episodeId,
+        episodeUrl,
+        episodeTitle,
+        feedTitle,
+      },
+    });
+  };
 
   if (isLoading) {
     return (
@@ -42,45 +64,46 @@ const HomeCard = () => {
     );
   }
 
-  const groupedEpisodes = userEpisodes.reduce(
-    (groups, episode) => {
-      const date = formatDateOnly(
-        episode.updated_at || episode.created_at || '',
-      );
-      if (!groups[date]) {
-        groups[date] = [];
-      }
-      groups[date].push(episode);
-      return groups;
-    },
-    {} as Record<string, EpisodeRecentRead[]>,
-  );
+  const sorted = sortEpisodes(userEpisodes);
+  const groupedEpisodes = groupEpisodesByDate(sorted);
 
   return (
-    <ScrollView>
-      {Object.entries(groupedEpisodes).map(([date, episodes]) => (
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 120 }}
+      showsHorizontalScrollIndicator={false}
+    >
+      {Object.entries(groupedEpisodes).map(([date, episodes], index) => (
         <View key={date}>
           <Text className="text-text-lime text-lg font-bold font-nunito mt-8 mb-3 pl-2">
             {date}
           </Text>
           {episodes.map((episode, index) => (
-            <View
+            <TouchableOpacity
+              onPress={() =>
+                handleGoToTranscription({
+                  episodeId: episode.id,
+                  episodeUrl: episode.enclosure_url,
+                  episodeTitle: episode.episode_title,
+                  feedTitle: episode.episode_title,
+                })
+              }
+              activeOpacity={0.7}
               key={index}
               className="w-full bg-border-darker h-49 rounded-2xl p-3 mb-3"
             >
-              <View className="bg-mirai-bgDarker w-full h-full rounded-2xl pl-6 pr-6 pt-3 flex-row justify-between items-center">
-                <View>
+              <View className="bg-mirai-bgDarker w-full h-full rounded-2xl pl-6 pr-6 pt-3 flex-row justify-between items-center gap-2">
+                <View className="flex-1">
                   <View className="rounded-full size-9 bg-mirai-bgDarkest items-center justify-center">
                     <MaterialIcons name="podcasts" size={18} color="white" />
                   </View>
                   <View className="flex-col mt-6">
                     <Text className="text-sm font-bold text-text-lime font-nunito">
-                      {formatDuration(episode.duration)}
+                      {formatDuration(episode.duration, DurationFormat.Compact)}
                     </Text>
                     <Text
-                      className="w-64 text-xl font-nunito font-bold text-white "
+                      className="w-full text-xl font-nunito font-bold text-white truncate"
                       numberOfLines={2}
-                      ellipsizeMode="tail"
                     >
                       {episode.episode_title || 'Untitled Episode'}
                     </Text>
@@ -99,7 +122,7 @@ const HomeCard = () => {
                   />
                 </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       ))}

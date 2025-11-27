@@ -20,6 +20,7 @@
     "types/**/*.d.ts",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "nativewind-env.d.ts"
+    "nativewind-env.d.ts",
+    "src/features/Episode/screen/TranscriptionScreen/hooks/useAudioPlayerStatusCustom.ts"
   ]
 }

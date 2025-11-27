@@ -1,7 +1,18 @@
+export enum DurationFormat {
+  Verbose = 'verbose',
+  Compact = 'compact',
+}
+
 const formatDate = (dateString?: number): string => {
   if (!dateString) return '';
+
   try {
-    const date = new Date(dateString);
+    const ts = Number(dateString);
+
+    if (isNaN(ts)) return '';
+
+    const date = new Date(ts * 1000);
+
     const months = [
       'January',
       'February',
@@ -16,26 +27,34 @@ const formatDate = (dateString?: number): string => {
       'November',
       'December',
     ];
+
     const month = months[date.getMonth()];
     const day = date.getDate();
     const year = date.getFullYear();
+
     return `${month} ${day}, ${year}`;
   } catch {
-    return dateString.toString();
+    return dateString?.toString() ?? '';
   }
 };
 
-const formatDuration = (seconds: number): string => {
+const formatDuration = (seconds: number, type: DurationFormat): string => {
   const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
+  const remainingSeconds = Math.floor(seconds % 60);
 
-  if (minutes === 0) {
-    return `${remainingSeconds} seconds`;
+  switch (type) {
+    case DurationFormat.Verbose:
+      if (minutes === 0) return `${remainingSeconds} seconds`;
+      if (remainingSeconds === 0)
+        return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+      return `${minutes} minute${minutes > 1 ? 's' : ''} ${remainingSeconds} second${remainingSeconds > 1 ? 's' : ''}`;
+
+    case DurationFormat.Compact:
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+
+    default:
+      return '';
   }
-  if (remainingSeconds === 0) {
-    return `${minutes} minute${minutes > 1 ? 's' : ''}`;
-  }
-  return `${minutes} minute${minutes > 1 ? 's' : ''} ${remainingSeconds} second${remainingSeconds > 1 ? 's' : ''}`;
 };
 
 const formatDateOnly = (dateTime: string) => {
