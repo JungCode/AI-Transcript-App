@@ -94,7 +94,7 @@ export function useSSEStreamExpo<T>(
   useEffect(() => {
     connect();
     return () => stop();
-  }, [url]);
+  }, [url, autoReconnect, reconnectInterval]);
 
   return { data, error, isConnected, stop, reconnect: connect };
 }

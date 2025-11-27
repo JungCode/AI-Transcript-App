@@ -10,6 +10,7 @@ interface IWordProps {
   player: AudioPlayer;
 }
 
+
 const WordComponent = ({ word, isActive, player }: IWordProps) => {
   const onPress = useCallback(async () => {
     await player.seekTo(word.start + 0.01);

@@ -59,7 +59,7 @@ const useFlashListScroll = ({
       await scrollCallback?.(listRef, activeSegmentIndex);
     };
     void run();
-  }, [activeSegmentIndex]);
+  }, [activeSegmentIndex, activeSegment]);
 
   return { listRef };
 };

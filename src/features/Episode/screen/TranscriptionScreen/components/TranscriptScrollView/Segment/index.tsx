@@ -9,9 +9,13 @@ interface ISegmentProps {
   player: AudioPlayer;
 }
 
+const EXPAND_TIME = 0.2;
+
 const Segment = ({ segment, audioStatus, player }: ISegmentProps) => {
   const currentTime = audioStatus.currentTime;
-  const isActive = currentTime >= segment.start && currentTime <= segment.end;
+  const isActive =
+    currentTime >= segment.start - EXPAND_TIME &&
+    currentTime <= segment.end + EXPAND_TIME;
 
   return (
     <View
