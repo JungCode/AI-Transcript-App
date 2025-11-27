@@ -33,7 +33,7 @@ const NoSubtitles = ({ episodeId, episodeUrl }: INoSubtitlesProps) => {
     },
   });
 
-  const { data } = useTranscriptStream(episodeId);
+  useTranscriptStream(episodeId);
 
   const handleCreateTranscription = () => {
     createTranscript({
@@ -47,8 +47,6 @@ const NoSubtitles = ({ episodeId, episodeUrl }: INoSubtitlesProps) => {
   const handleOnCloseModal = () => {
     setModalVisible(false);
   };
-
-  console.log('Transcript Stream Data:', data);
 
   return (
     <View className="w-full h-[70%] justify-center items-center px-4 gap-4">

@@ -64,7 +64,7 @@ const HomeCard = () => {
     );
   }
 
-  const sorted = sortEpisodes(userEpisodes ?? []);
+  const sorted = sortEpisodes(userEpisodes);
   const groupedEpisodes = groupEpisodesByDate(sorted);
 
   return (

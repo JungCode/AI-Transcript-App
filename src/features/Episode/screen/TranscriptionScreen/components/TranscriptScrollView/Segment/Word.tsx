@@ -2,7 +2,7 @@
 import type { AudioPlayer } from 'expo-audio';
 import { memo, useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
-import type { TranscriptWord } from '../../constants/transcript';
+import type { TranscriptWord } from '../../../constants/transcript';
 
 interface IWordProps {
   word: TranscriptWord;

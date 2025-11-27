@@ -28,8 +28,8 @@ const useFlashListScroll = ({
 }: IUseFlashListScrollParams) => {
   const listRef =
     useRef<React.ComponentRef<typeof FlashList<TranscriptSegment>>>(null);
-  const [activedSegmentIndex, setActivedSegmentIndex] = useState(0);
-  const [activedSegment, setActivedSegment] = useState<TranscriptSegment>(
+  const [activeSegmentIndex, setactiveSegmentIndex] = useState(0);
+  const [activeSegment, setactiveSegment] = useState<TranscriptSegment>(
     transcriptSegments[0],
   );
 
@@ -41,25 +41,25 @@ const useFlashListScroll = ({
       segment => currentTime >= segment.start && currentTime <= segment.end,
     );
 
-    if (index !== -1 && index !== activedSegmentIndex) {
-      setActivedSegmentIndex(index);
-      setActivedSegment(transcriptSegments[index]);
+    if (index !== -1 && index !== activeSegmentIndex) {
+      setactiveSegmentIndex(index);
+      setactiveSegment(transcriptSegments[index]);
     }
   }, [currentTime, transcriptSegments]);
 
   // Scroll to active segment
   useEffect(() => {
     beforeScrollCallback?.(
-      activedSegmentIndex,
-      activedSegment?.id,
-      activedSegment,
+      activeSegmentIndex,
+      activeSegment?.id,
+      activeSegment,
     );
 
     const run = async () => {
-      await scrollCallback?.(listRef, activedSegmentIndex);
+      await scrollCallback?.(listRef, activeSegmentIndex);
     };
     void run();
-  }, [activedSegmentIndex]);
+  }, [activeSegmentIndex]);
 
   return { listRef };
 };
