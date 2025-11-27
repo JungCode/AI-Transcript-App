@@ -3,11 +3,11 @@ export enum DurationFormat {
   Compact = 'compact',
 }
 
-const formatDate = (dateString?: number): string => {
-  if (!dateString) return '';
+const formatDate = (unixTimestamp?: number): string => {
+  if (!unixTimestamp) return '';
 
   try {
-    const ts = Number(dateString);
+    const ts = Number(unixTimestamp);
 
     if (isNaN(ts)) return '';
 
@@ -34,7 +34,7 @@ const formatDate = (dateString?: number): string => {
 
     return `${month} ${day}, ${year}`;
   } catch {
-    return dateString?.toString() ?? '';
+    return unixTimestamp?.toString() ?? '';
   }
 };
 

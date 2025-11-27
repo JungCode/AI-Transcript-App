@@ -22,7 +22,7 @@ const useAudioPlayerStatusCustom = (player: AudioPlayer, interval = 16) => {
     }, interval);
 
     return () => clearInterval(timer);
-  }, [player, defaultStatus.playing, defaultStatus, interval]);
+  }, [player, defaultStatus.playing, interval]);
 
   return status;
 };

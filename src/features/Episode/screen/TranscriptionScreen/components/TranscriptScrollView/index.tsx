@@ -4,10 +4,9 @@ import type {
 } from '@/features/Episode/screen/TranscriptionScreen/constants/transcript';
 import type {
   IHandleBeforeScrollFlashList,
-  IHandleScrollFlashList} from '@/features/Episode/screen/TranscriptionScreen/hooks/useFlashListScroll';
-import {
-  useFlashListScroll,
+  IHandleScrollFlashList,
 } from '@/features/Episode/screen/TranscriptionScreen/hooks/useFlashListScroll';
+import { useFlashListScroll } from '@/features/Episode/screen/TranscriptionScreen/hooks/useFlashListScroll';
 import {
   useGetTranscriptByEpisodeId,
   useTranslateSentence,
@@ -15,9 +14,9 @@ import {
 import { FlashList } from '@shopify/flash-list';
 import type { AudioPlayer, AudioStatus } from 'expo-audio';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import NoSubtitles from './NoSubtitles';
-import { Word } from './Word';
+import { Segment } from './Segment';
 
 interface ITranscriptScrollViewProps {
   episodeId: number;
@@ -67,17 +66,8 @@ const TranscriptScrollView = ({
   });
   const transcriptData = data?.transcript_data as TranscriptData | undefined;
 
-  const handleBeforeScroll: IHandleBeforeScrollFlashList = useCallback(
-    (_, __, activedSegment) => {
-      if (!activedSegment) return;
-
-      const activeIndex = segments.findIndex(s => s.id === activedSegment.id);
-      if (activeIndex === -1) return;
-
-      if (activedSegment.translated_sentence) return;
-
-      const batch = segments.slice(activeIndex, activeIndex + 5);
-
+  const requestTranslation = useCallback(
+    (batch: TranscriptSegment[]) => {
       translateBatch({
         data: {
           episode_id: episodeId,
@@ -88,7 +78,22 @@ const TranscriptScrollView = ({
         },
       });
     },
-    [segments, translateBatch, episodeId],
+    [episodeId, translateBatch],
+  );
+
+  const handleBeforeScroll: IHandleBeforeScrollFlashList = useCallback(
+    (_, __, activedSegment) => {
+      if (!activedSegment) return;
+
+      const activeIndex = segments.findIndex(s => s.id === activedSegment.id);
+      if (activeIndex === -1) return;
+
+      if (activedSegment.translated_sentence) return;
+
+      const batch = segments.slice(activeIndex, activeIndex + 5);
+      requestTranslation(batch);
+    },
+    [segments, requestTranslation],
   );
 
   const handleScroll: IHandleScrollFlashList = useCallback(
@@ -99,7 +104,7 @@ const TranscriptScrollView = ({
       await listRef.current?.scrollToIndex({
         index,
         animated: true,
-        viewPosition: isLastItems ? 0 : 0.3,
+        viewPosition: 0.3,
       });
     },
     [segments.length],
@@ -126,21 +131,9 @@ const TranscriptScrollView = ({
     const first = segments[0];
 
     if (!first.translated_sentence) {
-      const batch = segments.slice(0, 5);
-
-      const payload = batch.map(seg => ({
-        sentence_id: seg.id,
-        sentence: seg.text,
-      }));
-
-      translateBatch({
-        data: {
-          episode_id: episodeId,
-          data: payload,
-        },
-      });
+      requestTranslation(segments.slice(0, 5));
     }
-  }, [segments.length]);
+  }, [segments.length, requestTranslation]);
 
   if (isLoading) {
     return (
@@ -160,52 +153,13 @@ const TranscriptScrollView = ({
     <FlashList
       ref={listRef}
       data={segments}
-      renderItem={({ item: currentSegment }) => {
-        const currentTime = audioStatus.currentTime;
-        const isActive =
-          currentTime >= currentSegment.start &&
-          currentTime <= currentSegment.end;
-
-        return (
-          <View
-            className={`${
-              isActive ? 'bg-surface-deep' : ''
-            } rounded-3xl p-4 gap-2 mb-4`}
-          >
-            <TouchableOpacity
-              onPress={() => {
-                void player.seekTo(currentSegment.start);
-                audioStatus.currentTime = currentSegment.start;
-              }}
-            >
-              <View className="flex-row flex-wrap">
-                {currentSegment.words.map((word, index: number) => {
-                  let wordActive = false;
-
-                  if (isActive) {
-                    wordActive =
-                      currentTime >= word.start && currentTime <= word.end;
-                  }
-
-                  return (
-                    <Word
-                      player={player}
-                      key={index}
-                      word={word}
-                      isActive={wordActive}
-                    />
-                  );
-                })}
-              </View>
-              <View className="px-3">
-                <Text className="text-text-muted text-base font-nunito font-semibold">
-                  {currentSegment.translated_sentence}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        );
-      }}
+      renderItem={({ item: currentSegment }) => (
+        <Segment
+          segment={currentSegment}
+          player={player}
+          audioStatus={audioStatus}
+        />
+      )}
       className="w-full min-h-full pt-3"
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 200 }}

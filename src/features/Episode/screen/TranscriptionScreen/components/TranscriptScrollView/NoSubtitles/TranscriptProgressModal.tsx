@@ -19,24 +19,6 @@ const TranscriptProgressModal = ({ visible, onClose }: Props) => {
             Generating Subtitles...
           </Text>
 
-          {/* {!data && (
-            <View className="items-center py-4">
-              <ActivityIndicator size="large" />
-              <Text className="mt-3 text-gray-600">Waiting for updates...</Text>
-            </View>
-          )}
-
-          {data && (
-            <View>
-              <Text className="text-gray-700 font-semibold mb-2">
-                Latest Update:
-              </Text>
-              <Text className="text-gray-900">
-                {JSON.stringify(data, null, 2)}
-              </Text>
-            </View>
-          )} */}
-
           <Text
             onPress={onClose}
             className="text-center text-blue-600 mt-6 font-medium"
