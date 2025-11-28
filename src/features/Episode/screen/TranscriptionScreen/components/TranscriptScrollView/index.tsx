@@ -1,19 +1,12 @@
 import type {
-  TranscriptData,
-  TranscriptSegment,
-} from '@/features/Episode/screen/TranscriptionScreen/constants/transcript';
-import type {
   IHandleBeforeScrollFlashList,
   IHandleScrollFlashList,
 } from '@/features/Episode/screen/TranscriptionScreen/hooks/useFlashListScroll';
 import { useFlashListScroll } from '@/features/Episode/screen/TranscriptionScreen/hooks/useFlashListScroll';
-import {
-  useGetTranscriptByEpisodeId,
-  useTranslateSentence,
-} from '@/shared/api/ai-translatorSchemas';
+import { useTranscriptManagement } from '@/features/Episode/screen/TranscriptionScreen/hooks/useTranscriptManagement';
 import { FlashList } from '@shopify/flash-list';
 import type { AudioPlayer, AudioStatus } from 'expo-audio';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { ActivityIndicator } from 'react-native';
 import NoSubtitles from './NoSubtitles';
 import { Segment } from './Segment';
@@ -31,55 +24,14 @@ const TranscriptScrollView = ({
   audioStatus,
   player,
 }: ITranscriptScrollViewProps) => {
-  const [segments, setSegments] = useState<TranscriptSegment[]>([]);
-
-  const { mutate: translateBatch } = useTranslateSentence({
-    mutation: {
-      onSuccess: (response, variables) => {
-        setSegments(prev => {
-          const output = [...prev];
-          const translatedList = response.translated_sentence_list;
-          const inputList = variables.data.data;
-
-          inputList.forEach((input, idx) => {
-            const translated = translatedList[idx];
-            const pos = output.findIndex(s => s.id === input.sentence_id);
-
-            if (pos !== -1) {
-              output[pos] = {
-                ...output[pos],
-                translated_sentence: translated,
-              };
-            }
-          });
-
-          return output;
-        });
-      },
-    },
-  });
-
-  const { data, isLoading } = useGetTranscriptByEpisodeId(episodeId, {
-    query: {
-      enabled: !!episodeId,
-    },
-  });
-  const transcriptData = data?.transcript_data as TranscriptData | undefined;
-
-  const requestTranslation = useCallback(
-    (batch: TranscriptSegment[]) => {
-      translateBatch({
-        data: {
-          episode_id: episodeId,
-          data: batch.map(seg => ({
-            sentence_id: seg.id,
-            sentence: seg.text,
-          })),
-        },
-      });
-    },
-    [episodeId, translateBatch],
-  );
+  const {
+    segments,
+    transcriptData,
+    isLoading,
+    refetch,
+    requestTranslation,
+    transcriptId,
+  } = useTranscriptManagement({ episodeId });
 
   const handleBeforeScroll: IHandleBeforeScrollFlashList = useCallback(
     (_, __, activedSegment) => {
@@ -117,24 +69,6 @@ const TranscriptScrollView = ({
     scrollCallback: handleScroll,
   });
 
-  useEffect(() => {
-    const transcriptSegments = transcriptData?.transcript?.segments ?? [];
-
-    if (transcriptSegments?.length) {
-      setSegments(transcriptSegments);
-    }
-  }, [transcriptData?.transcript?.segments]);
-
-  useEffect(() => {
-    if (segments.length === 0) return;
-
-    const first = segments[0];
-
-    if (!first.translated_sentence) {
-      requestTranslation(segments.slice(0, 5));
-    }
-  }, [segments.length, requestTranslation]);
-
   if (isLoading) {
     return (
       <ActivityIndicator
@@ -145,8 +79,15 @@ const TranscriptScrollView = ({
     );
   }
 
-  if (!transcriptData) {
-    return <NoSubtitles episodeId={episodeId} episodeUrl={episodeUrl} />;
+  if (!transcriptData || segments.length === 0) {
+    return (
+      <NoSubtitles
+        initTranscriptId={transcriptId ?? undefined}
+        refetch={refetch}
+        episodeId={episodeId}
+        episodeUrl={episodeUrl}
+      />
+    );
   }
 
   return (
