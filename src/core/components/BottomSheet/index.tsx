@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import type {
-  ViewStyle} from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import type { ViewStyle } from 'react-native';
 import {
   Animated,
   Modal,
   PanResponder,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 
 interface BottomSheetProps {
@@ -30,8 +29,10 @@ const BottomSheet = ({
   overlayStyle,
   className,
 }: BottomSheetProps) => {
+  const [modalVisible, setModalVisible] = useState(false);
   const translateY = useState(new Animated.Value(500))[0];
   const opacity = useState(new Animated.Value(0))[0];
+  const prevVisibleRef = useRef(visible);
 
   const panResponder = useState(() =>
     PanResponder.create({
@@ -58,6 +59,7 @@ const BottomSheet = ({
   )[0];
 
   const openBottomSheet = () => {
+    setModalVisible(true);
     translateY.setValue(500);
     opacity.setValue(0);
 
@@ -89,21 +91,27 @@ const BottomSheet = ({
         useNativeDriver: true,
       }),
     ]).start(() => {
+      setModalVisible(false);
       onClose();
     });
   };
 
-  React.useEffect(() => {
-    if (visible) {
+  useEffect(() => {
+    if (visible && !prevVisibleRef.current) {
+      // Opening
       openBottomSheet();
+    } else if (!visible && prevVisibleRef.current) {
+      // Closing
+      closeBottomSheet();
     }
+    prevVisibleRef.current = visible;
   }, [visible]);
 
-  if (!visible) return null;
+  if (!modalVisible) return null;
 
   return (
     <Modal
-      visible={visible}
+      visible={modalVisible}
       animationType="none"
       transparent
       onRequestClose={closeBottomSheet}
