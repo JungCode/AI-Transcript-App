@@ -1,4 +1,8 @@
 import type {
+  TranscriptSegment,
+  TranscriptWord
+} from '@/features/Episode/screen/TranscriptionScreen/constants/transcript';
+import type {
   IHandleBeforeScrollFlashList,
   IHandleScrollFlashList,
 } from '@/features/Episode/screen/TranscriptionScreen/hooks/useFlashListScroll';
@@ -16,6 +20,7 @@ interface ITranscriptScrollViewProps {
   episodeUrl: string;
   audioStatus: AudioStatus;
   player: AudioPlayer;
+  onShowWordDefinition?: (word: TranscriptWord, segment: TranscriptSegment) => void;
 }
 
 const TranscriptScrollView = ({
@@ -23,6 +28,7 @@ const TranscriptScrollView = ({
   episodeUrl,
   audioStatus,
   player,
+  onShowWordDefinition,
 }: ITranscriptScrollViewProps) => {
   const {
     segments,
@@ -32,6 +38,13 @@ const TranscriptScrollView = ({
     requestTranslation,
     transcriptId,
   } = useTranscriptManagement({ episodeId });
+
+  const requestSingleTranslation = useCallback(
+    (segment: TranscriptSegment) => {
+      requestTranslation([segment]);
+    },
+    [requestTranslation],
+  );
 
   const handleBeforeScroll: IHandleBeforeScrollFlashList = useCallback(
     (_, __, activedSegment) => {
@@ -99,6 +112,8 @@ const TranscriptScrollView = ({
           segment={currentSegment}
           player={player}
           audioStatus={audioStatus}
+          onRequestTranslation={() => requestSingleTranslation(currentSegment)}
+          onShowWordDefinition={onShowWordDefinition}
         />
       )}
       className="w-full min-h-full pt-3"
