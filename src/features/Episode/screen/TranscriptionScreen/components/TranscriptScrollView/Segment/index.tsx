@@ -1,4 +1,7 @@
-import type { TranscriptSegment } from '@/features/Episode/screen/TranscriptionScreen/constants/transcript';
+import type {
+    TranscriptSegment,
+    TranscriptWord,
+} from '@/features/Episode/screen/TranscriptionScreen/constants/transcript';
 import type { AudioPlayer, AudioStatus } from 'expo-audio';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { Word } from './Word';
@@ -7,11 +10,19 @@ interface ISegmentProps {
   segment: TranscriptSegment;
   audioStatus: AudioStatus;
   player: AudioPlayer;
+  onRequestTranslation?: () => void;
+  onShowWordDefinition?: (word: TranscriptWord, segment: TranscriptSegment) => void;
 }
 
 const EXPAND_TIME = 0.2;
 
-const Segment = ({ segment, audioStatus, player }: ISegmentProps) => {
+const Segment = ({
+  segment,
+  audioStatus,
+  player,
+  onRequestTranslation,
+  onShowWordDefinition,
+}: ISegmentProps) => {
   const currentTime = audioStatus.currentTime;
   const isActive =
     currentTime >= segment.start - EXPAND_TIME &&
@@ -42,6 +53,10 @@ const Segment = ({ segment, audioStatus, player }: ISegmentProps) => {
                 key={index}
                 word={word}
                 isActive={wordActive}
+                segment={segment}
+                isSegmentActive={isActive}
+                onRequestTranslation={onRequestTranslation}
+                onShowWordDefinition={onShowWordDefinition}
               />
             );
           })}

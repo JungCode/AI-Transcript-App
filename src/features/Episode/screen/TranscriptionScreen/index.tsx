@@ -1,18 +1,30 @@
 import { Button } from '@/core/components';
+import { useTranslateWord } from '@/shared/api/ai-translatorSchemas';
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAudioPlayer } from 'expo-audio';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { AudioPlayer } from './components/AudioPlayer';
 import { TranscriptScrollView } from './components/TranscriptScrollView';
+import { WordDefinitionModal } from './components/WordDefinitionModal';
 import {
   AUDIO_FUNCTION_BUTTON_COMPONENTS,
   AudioFunctionName,
 } from './constants';
+import type { TranscriptSegment, TranscriptWord } from './constants/transcript';
 import { getButtonFunctionByName } from './helpers/AudioButton';
 import { useAudioPlayerStatusCustom } from './hooks/useAudioPlayerStatusCustom';
+
+interface WordDefinitionData {
+  word: string;
+  phonetic?: string;
+  translation?: string;
+  explanation?: string;
+  partOfSpeech?: string;
+}
 
 const TranscriptionScreen = () => {
   const { episodeUrl, episodeTitle, feedTitle, episodeId } =
@@ -25,6 +37,114 @@ const TranscriptionScreen = () => {
 
   const player = useAudioPlayer(episodeUrl);
   const status = useAudioPlayerStatusCustom(player);
+  const [wordDefinition, setWordDefinition] = useState<WordDefinitionData | null>(null);
+  const [isWordModalVisible, setIsWordModalVisible] = useState(false);
+  const [selectedWord, setSelectedWord] = useState<TranscriptWord | null>(null);
+  const [selectedSegment, setSelectedSegment] = useState<TranscriptSegment | null>(null);
+  const [wordToTranslate, setWordToTranslate] = useState<string | null>(null);
+  const [sentenceToTranslate, setSentenceToTranslate] = useState<string | null>(null);
+
+  // Query for word translation
+  const { 
+    data: wordTranslationData, 
+    isLoading: isTranslatingWord,
+    error: translationError,
+  } = useTranslateWord(
+    wordToTranslate ?? '',
+    sentenceToTranslate ?? '',
+    {
+      query: {
+        enabled: !!(wordToTranslate && sentenceToTranslate && wordToTranslate.trim() !== '' && sentenceToTranslate.trim() !== ''),
+        retry: 1,
+      },
+    },
+  );
+
+  // Handle successful translation
+  useEffect(() => {
+    if (wordTranslationData) {
+      // Cập nhật word definition với data từ API
+      setWordDefinition({
+        word: wordTranslationData.word ?? wordToTranslate ?? '',
+        phonetic: wordTranslationData.phonetic,
+        translation: wordTranslationData.translated_word,
+        explanation: wordTranslationData.detail,
+        partOfSpeech: wordTranslationData.word_type,
+      });
+    }
+  }, [wordTranslationData, wordToTranslate, sentenceToTranslate]);
+
+  // Handle translation error
+  useEffect(() => {
+    if (translationError) {
+      // Fallback to segment translation if API fails
+      if (selectedSegment) {
+        const translation = selectedSegment.translated_sentence ?? '';
+        setWordDefinition({
+          word: wordToTranslate ?? '',
+          translation: translation,
+          explanation: translation
+            ? `"${wordToTranslate}" trong câu này có nghĩa là "${translation}"`
+            : undefined,
+          partOfSpeech: 't.phụ',
+        });
+      }
+    }
+  }, [translationError, wordToTranslate, sentenceToTranslate, selectedSegment]);
+
+
+  const handleShowWordDefinition = (
+    word: TranscriptWord,
+    segment: TranscriptSegment,
+  ) => {
+    setSelectedWord(word);
+    setSelectedSegment(segment);
+    
+    // Set word and sentence for API call - ensure they're not empty
+    const wordText = word.word?.trim() ?? '';
+    const sentenceText = segment.text?.trim() ?? '';
+    
+    if (!wordText || !sentenceText) {
+      // Show modal with segment translation only
+      setIsWordModalVisible(true);
+      setWordDefinition({
+        word: wordText,
+        translation: segment.translated_sentence,
+        explanation: segment.translated_sentence ?? undefined,
+      });
+      return;
+    }
+    
+    // Set word and sentence for API call
+    setWordToTranslate(wordText);
+    setSentenceToTranslate(sentenceText);
+    
+    // Show modal immediately with loading state
+    setIsWordModalVisible(true);
+    
+    // Set initial definition (will be updated when API responds)
+    setWordDefinition({
+      word: wordText,
+      translation: segment.translated_sentence,
+      explanation: `Đang tải định nghĩa cho "${wordText}"...`,
+    });
+  };
+
+  const handleCloseWordModal = () => {
+    setIsWordModalVisible(false);
+    setWordDefinition(null);
+    setSelectedWord(null);
+    setSelectedSegment(null);
+    setWordToTranslate(null);
+    setSentenceToTranslate(null);
+  };
+
+  const handlePlayWordAudio = () => {
+    if (selectedWord) {
+      // Seek to the word's start time to play it
+      void player.seekTo(selectedWord.start + 0.01);
+    }
+  };
 
   return (
     <View className="flex-1 bg-surface px-4">
@@ -77,6 +197,7 @@ const TranscriptionScreen = () => {
         episodeUrl={episodeUrl}
         episodeId={Number(episodeId)}
         audioStatus={status}
+        onShowWordDefinition={handleShowWordDefinition}
       />
 
       <View className="absolute bottom-10 left-0 right-0 px-4">
@@ -120,6 +241,20 @@ const TranscriptionScreen = () => {
           </AudioPlayer>
         </View>
       </View>
+
+      {wordDefinition && (
+        <WordDefinitionModal
+          visible={isWordModalVisible}
+          word={wordDefinition.word}
+          phonetic={wordDefinition.phonetic}
+          translation={wordDefinition.translation}
+          explanation={wordDefinition.explanation}
+          partOfSpeech={wordDefinition.partOfSpeech}
+          isLoading={isTranslatingWord}
+          onClose={handleCloseWordModal}
+          onPlayAudio={handlePlayWordAudio}
+        />
+      )}
     </View>
   );
 };
