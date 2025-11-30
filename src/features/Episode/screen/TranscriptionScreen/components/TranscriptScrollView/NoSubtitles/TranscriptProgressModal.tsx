@@ -6,7 +6,7 @@ interface Props {
   visible: boolean;
   progress: number;
   onClose: () => void;
-  refetch: (options?: RefetchOptions  ) => void;
+  refetch: (options?: RefetchOptions) => void;
 }
 
 const TranscriptProgressModal = ({
@@ -25,9 +25,10 @@ const TranscriptProgressModal = ({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType="fade"
       transparent
       onRequestClose={onClose}
+      statusBarTranslucent
     >
       <View className="flex-1 justify-center items-center bg-[rgba(0,0,0,0.5)] px-4">
         <View className="bg-surface p-6 rounded-xl w-full max-w-[400px]">

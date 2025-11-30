@@ -1,4 +1,4 @@
-import { Button } from '@/core/components';
+import { BottomSheet, Button } from '@/core/components';
 import { useTranslateWord } from '@/shared/api/ai-translatorSchemas';
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -17,6 +17,7 @@ import {
 import type { TranscriptSegment, TranscriptWord } from './constants/transcript';
 import { getButtonFunctionByName } from './helpers/AudioButton';
 import { useAudioPlayerStatusCustom } from './hooks/useAudioPlayerStatusCustom';
+import { useTranscriptManagement } from './hooks/useTranscriptManagement';
 
 interface WordDefinitionData {
   word: string;
@@ -27,6 +28,9 @@ interface WordDefinitionData {
 }
 
 const TranscriptionScreen = () => {
+  const [isExplainBottomSheetVisible, setIsExplainBottomSheetVisible] =
+    useState(false);
+
   const { episodeUrl, episodeTitle, feedTitle, episodeId } =
     useLocalSearchParams<{
       episodeId: string;
@@ -37,28 +41,33 @@ const TranscriptionScreen = () => {
 
   const player = useAudioPlayer(episodeUrl);
   const status = useAudioPlayerStatusCustom(player);
-  const [wordDefinition, setWordDefinition] = useState<WordDefinitionData | null>(null);
+  const [wordDefinition, setWordDefinition] =
+    useState<WordDefinitionData | null>(null);
   const [isWordModalVisible, setIsWordModalVisible] = useState(false);
   const [selectedWord, setSelectedWord] = useState<TranscriptWord | null>(null);
-  const [selectedSegment, setSelectedSegment] = useState<TranscriptSegment | null>(null);
+  const [selectedSegment, setSelectedSegment] =
+    useState<TranscriptSegment | null>(null);
   const [wordToTranslate, setWordToTranslate] = useState<string | null>(null);
-  const [sentenceToTranslate, setSentenceToTranslate] = useState<string | null>(null);
+  const [sentenceToTranslate, setSentenceToTranslate] = useState<string | null>(
+    null,
+  );
 
   // Query for word translation
-  const { 
-    data: wordTranslationData, 
+  const {
+    data: wordTranslationData,
     isLoading: isTranslatingWord,
     error: translationError,
-  } = useTranslateWord(
-    wordToTranslate ?? '',
-    sentenceToTranslate ?? '',
-    {
-      query: {
-        enabled: !!(wordToTranslate && sentenceToTranslate && wordToTranslate.trim() !== '' && sentenceToTranslate.trim() !== ''),
-        retry: 1,
-      },
+  } = useTranslateWord(wordToTranslate ?? '', sentenceToTranslate ?? '', {
+    query: {
+      enabled: !!(
+        wordToTranslate &&
+        sentenceToTranslate &&
+        wordToTranslate.trim() !== '' &&
+        sentenceToTranslate.trim() !== ''
+      ),
+      retry: 1,
     },
-  );
+  });
 
   // Handle successful translation
   useEffect(() => {
@@ -92,18 +101,17 @@ const TranscriptionScreen = () => {
     }
   }, [translationError, wordToTranslate, sentenceToTranslate, selectedSegment]);
 
-
   const handleShowWordDefinition = (
     word: TranscriptWord,
     segment: TranscriptSegment,
   ) => {
     setSelectedWord(word);
     setSelectedSegment(segment);
-    
+
     // Set word and sentence for API call - ensure they're not empty
     const wordText = word.word?.trim() ?? '';
     const sentenceText = segment.text?.trim() ?? '';
-    
+
     if (!wordText || !sentenceText) {
       // Show modal with segment translation only
       setIsWordModalVisible(true);
@@ -114,14 +122,14 @@ const TranscriptionScreen = () => {
       });
       return;
     }
-    
+
     // Set word and sentence for API call
     setWordToTranslate(wordText);
     setSentenceToTranslate(sentenceText);
-    
+
     // Show modal immediately with loading state
     setIsWordModalVisible(true);
-    
+
     // Set initial definition (will be updated when API responds)
     setWordDefinition({
       word: wordText,
@@ -145,6 +153,9 @@ const TranscriptionScreen = () => {
       void player.seekTo(selectedWord.start + 0.01);
     }
   };
+
+  const { transcriptData, segments, setSegments, isLoading, refetch } =
+    useTranscriptManagement({ episodeId: Number(episodeId) });
 
   return (
     <View className="flex-1 bg-surface px-4">
@@ -193,6 +204,11 @@ const TranscriptionScreen = () => {
       </View>
 
       <TranscriptScrollView
+        isLoading={isLoading}
+        refetch={refetch}
+        transcriptData={transcriptData}
+        segments={segments}
+        setSegments={setSegments}
         player={player}
         episodeUrl={episodeUrl}
         episodeId={Number(episodeId)}
@@ -212,6 +228,8 @@ const TranscriptionScreen = () => {
                       onPress={getButtonFunctionByName({
                         name: button.name,
                         handlePlayPause,
+                        onExplainPress: () =>
+                          setIsExplainBottomSheetVisible(true),
                       })}
                       className="items-center "
                     >
@@ -255,6 +273,29 @@ const TranscriptionScreen = () => {
           onPlayAudio={handlePlayWordAudio}
         />
       )}
+      {/* Explain Bottom Sheet */}
+      <BottomSheet
+        visible={isExplainBottomSheetVisible}
+        onClose={() => setIsExplainBottomSheetVisible(false)}
+        height={300}
+      >
+        <Text className="text-white text-2xl font-bold font-nunito mb-4">
+          Explain
+        </Text>
+
+        <Text className="text-gray-300 text-base font-nunito mb-4">
+          Get detailed explanations about this section of the episode.
+        </Text>
+
+        <TouchableOpacity
+          onPress={() => setIsExplainBottomSheetVisible(false)}
+          className="bg-primary rounded-xl py-3 items-center mt-4"
+        >
+          <Text className="text-surface font-bold font-nunito text-base">
+            Close
+          </Text>
+        </TouchableOpacity>
+      </BottomSheet>
     </View>
   );
 };

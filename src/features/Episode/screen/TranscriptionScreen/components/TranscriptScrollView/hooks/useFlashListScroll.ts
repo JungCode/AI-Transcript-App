@@ -1,6 +1,6 @@
 import type { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useEffect, useRef, useState } from 'react';
-import type { TranscriptSegment } from '../constants/transcript';
+import type { TranscriptSegment } from '../../../constants/transcript';
 
 type IHandleBeforeScrollFlashList = (
   index: number,

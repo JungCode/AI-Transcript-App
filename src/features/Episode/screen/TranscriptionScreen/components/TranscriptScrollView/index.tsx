@@ -1,13 +1,14 @@
 import type {
-  TranscriptSegment,
-  TranscriptWord
-} from '@/features/Episode/screen/TranscriptionScreen/constants/transcript';
-import type {
   IHandleBeforeScrollFlashList,
   IHandleScrollFlashList,
-} from '@/features/Episode/screen/TranscriptionScreen/hooks/useFlashListScroll';
-import { useFlashListScroll } from '@/features/Episode/screen/TranscriptionScreen/hooks/useFlashListScroll';
-import { useTranscriptManagement } from '@/features/Episode/screen/TranscriptionScreen/hooks/useTranscriptManagement';
+} from '@/features/Episode/screen/TranscriptionScreen/components/TranscriptScrollView/hooks/useFlashListScroll';
+import { useFlashListScroll } from '@/features/Episode/screen/TranscriptionScreen/components/TranscriptScrollView/hooks/useFlashListScroll';
+import { useTranslateManagement } from '@/features/Episode/screen/TranscriptionScreen/components/TranscriptScrollView/hooks/useTranslateManagement';
+import type {
+  TranscriptData,
+  TranscriptSegment,
+  TranscriptWord,
+} from '@/features/Episode/screen/TranscriptionScreen/constants/transcript';
 import { FlashList } from '@shopify/flash-list';
 import type { AudioPlayer, AudioStatus } from 'expo-audio';
 import { useCallback } from 'react';
@@ -20,7 +21,15 @@ interface ITranscriptScrollViewProps {
   episodeUrl: string;
   audioStatus: AudioStatus;
   player: AudioPlayer;
-  onShowWordDefinition?: (word: TranscriptWord, segment: TranscriptSegment) => void;
+  onShowWordDefinition?: (
+    word: TranscriptWord,
+    segment: TranscriptSegment,
+  ) => void;
+  transcriptData: TranscriptData | undefined;
+  segments: TranscriptSegment[];
+  setSegments: React.Dispatch<React.SetStateAction<TranscriptSegment[]>>;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const TranscriptScrollView = ({
@@ -29,15 +38,19 @@ const TranscriptScrollView = ({
   audioStatus,
   player,
   onShowWordDefinition,
+  transcriptData,
+  segments,
+  setSegments,
+  isLoading,
+  refetch,
 }: ITranscriptScrollViewProps) => {
-  const {
+  const transcriptId = transcriptData?.id;
+
+  const { requestTranslation } = useTranslateManagement({
+    episodeId,
     segments,
-    transcriptData,
-    isLoading,
-    refetch,
-    requestTranslation,
-    transcriptId,
-  } = useTranscriptManagement({ episodeId });
+    setSegments,
+  });
 
   const requestSingleTranslation = useCallback(
     (segment: TranscriptSegment) => {

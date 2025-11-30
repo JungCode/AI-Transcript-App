@@ -1,5 +1,5 @@
 import { Button } from '@/core/components';
-import { useTranscriptStream } from '@/features/Episode/screen/TranscriptionScreen/hooks/useTranscriptStream';
+import { useTranscriptStream } from '@/features/Episode/screen/TranscriptionScreen/components/TranscriptScrollView/NoSubtitles/hooks/useTranscriptStream';
 import { useCreateTranscript } from '@/shared/api/ai-translatorSchemas';
 import type { RefetchOptions } from '@tanstack/react-query';
 import { router } from 'expo-router';
