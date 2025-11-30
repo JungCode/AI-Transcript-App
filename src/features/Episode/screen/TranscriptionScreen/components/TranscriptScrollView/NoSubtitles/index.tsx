@@ -1,27 +1,45 @@
 import { Button } from '@/core/components';
+import { useTranscriptStream } from '@/features/Episode/screen/TranscriptionScreen/hooks/useTranscriptStream';
 import { useCreateTranscript } from '@/shared/api/ai-translatorSchemas';
-import { useState } from 'react';
+import type { RefetchOptions } from '@tanstack/react-query';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { useTranscriptStream } from '../../../hooks/useTranscriptStream';
 import { TranscriptProgressModal } from './TranscriptProgressModal';
 
-interface INoSubtitlesProps {
-  episodeId: number;
-  episodeUrl: string;
+interface successResponse {
+  message: string;
+  status: string;
+  transcript_id: number;
 }
 
-const NoSubtitles = ({ episodeId, episodeUrl }: INoSubtitlesProps) => {
-  const [isModalVisible, setModalVisible] = useState(false);
+interface INoSubtitlesProps {
+  initTranscriptId: number | undefined;
+  episodeId: number;
+  episodeUrl: string;
+  refetch: (options?: RefetchOptions  ) => void;
+}
+
+const NoSubtitles = ({
+  episodeId,
+  episodeUrl,
+  refetch,
+  initTranscriptId,
+}: INoSubtitlesProps) => {
+  const [transcriptId, setTranscriptId] = useState<number | null>(null);
+
   const { mutate: createTranscript } = useCreateTranscript({
     mutation: {
-      onSuccess: () => {
+      onSuccess: data => {
+        const response = data as successResponse;
+        setTranscriptId(response.transcript_id);
+
         Toast.show({
           type: 'success',
           text1: 'Transcription successful! 🎉',
           text2: 'Your subtitles are in progress.',
         });
-        setModalVisible(true);
       },
       onError: () => {
         Toast.show({
@@ -33,7 +51,10 @@ const NoSubtitles = ({ episodeId, episodeUrl }: INoSubtitlesProps) => {
     },
   });
 
-  useTranscriptStream(episodeId);
+  const { progress } = useTranscriptStream(
+    transcriptId ?? 0,
+    !!transcriptId, // enable SSE only when we have an id
+  );
 
   const handleCreateTranscription = () => {
     createTranscript({
@@ -45,8 +66,17 @@ const NoSubtitles = ({ episodeId, episodeUrl }: INoSubtitlesProps) => {
   };
 
   const handleOnCloseModal = () => {
-    setModalVisible(false);
+    if (progress < 100) {
+      router.back();
+    }
+    setTranscriptId(null);
   };
+
+  useEffect(() => {
+    if (initTranscriptId) {
+      setTranscriptId(initTranscriptId);
+    }
+  }, [initTranscriptId]);
 
   return (
     <View className="w-full h-[70%] justify-center items-center px-4 gap-4">
@@ -64,8 +94,9 @@ const NoSubtitles = ({ episodeId, episodeUrl }: INoSubtitlesProps) => {
         Available in English
       </Text>
       <TranscriptProgressModal
-        visible={isModalVisible}
-        // data={data}
+        refetch={refetch}
+        visible={!!transcriptId}
+        progress={progress}
         onClose={handleOnCloseModal}
       />
     </View>

@@ -20,5 +20,6 @@ export interface TranscriptContent {
 }
 
 export interface TranscriptData {
+  id: number;
   transcript: TranscriptContent;
 }
