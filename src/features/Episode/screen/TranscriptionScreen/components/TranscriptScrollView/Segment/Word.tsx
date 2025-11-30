@@ -3,7 +3,10 @@ import type { AudioPlayer } from 'expo-audio';
 import { memo, useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import Toast from 'react-native-toast-message';
-import type { TranscriptSegment, TranscriptWord } from '../../../constants/transcript';
+import type {
+  TranscriptSegment,
+  TranscriptWord,
+} from '../../../constants/transcript';
 
 interface IWordProps {
   word: TranscriptWord;
@@ -12,7 +15,10 @@ interface IWordProps {
   segment: TranscriptSegment;
   isSegmentActive: boolean;
   onRequestTranslation?: () => void;
-  onShowWordDefinition?: (word: TranscriptWord, segment: TranscriptSegment) => void;
+  onShowWordDefinition?: (
+    word: TranscriptWord,
+    segment: TranscriptSegment,
+  ) => void;
 }
 
 const WordComponent = ({
@@ -27,6 +33,7 @@ const WordComponent = ({
   const onPress = useCallback(async () => {
     // Nếu segment đang được đọc, hiển thị bản dịch thay vì seek
     if (isSegmentActive) {
+      player.pause();
       if (segment.translated_sentence && onShowWordDefinition) {
         // Hiển thị modal định nghĩa từ
         onShowWordDefinition(word, segment);

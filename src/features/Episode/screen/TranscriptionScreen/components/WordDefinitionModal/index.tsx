@@ -1,39 +1,152 @@
+import { useTranslateWord } from '@/shared/api/ai-translatorSchemas';
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, Modal, Text, TouchableOpacity, View } from 'react-native';
+import type { AudioPlayer } from 'expo-audio';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Modal,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import type {
+  TranscriptSegment,
+  TranscriptWord,
+} from '../../constants/transcript';
 
-interface IWordDefinitionModalProps {
-  visible: boolean;
+interface WordDefinitionData {
   word: string;
   phonetic?: string;
   translation?: string;
   explanation?: string;
   partOfSpeech?: string;
-  isLoading?: boolean;
+}
+
+interface IWordDefinitionModalProps {
+  visible: boolean;
+  selectedWord: TranscriptWord | null;
+  selectedSegment: TranscriptSegment | null;
+  player: AudioPlayer;
   onClose: () => void;
-  onPlayAudio?: () => void;
 }
 
 const WordDefinitionModal = ({
   visible,
-  word,
-  phonetic,
-  translation,
-  explanation,
-  partOfSpeech,
-  isLoading = false,
+  selectedWord,
+  selectedSegment,
+  player,
   onClose,
-  onPlayAudio,
 }: IWordDefinitionModalProps) => {
+  const [wordDefinition, setWordDefinition] =
+    useState<WordDefinitionData | null>(null);
+  const [wordToTranslate, setWordToTranslate] = useState<string | null>(null);
+  const [sentenceToTranslate, setSentenceToTranslate] = useState<string | null>(
+    null,
+  );
+
+  // Query for word translation
+  const {
+    data: wordTranslationData,
+    isLoading: isTranslatingWord,
+    error: translationError,
+  } = useTranslateWord(wordToTranslate ?? '', sentenceToTranslate ?? '', {
+    query: {
+      enabled: !!(
+        wordToTranslate &&
+        sentenceToTranslate &&
+        wordToTranslate.trim() !== '' &&
+        sentenceToTranslate.trim() !== ''
+      ),
+      retry: 1,
+    },
+  });
+
+  // Handle word/segment change
+  useEffect(() => {
+    if (!visible || !selectedWord || !selectedSegment) {
+      return;
+    }
+
+    const wordText = selectedWord.word?.trim() ?? '';
+    const sentenceText = selectedSegment.text?.trim() ?? '';
+
+    if (!wordText || !sentenceText) {
+      // Show with segment translation only
+      setWordDefinition({
+        word: wordText,
+        translation: selectedSegment.translated_sentence,
+        explanation: selectedSegment.translated_sentence ?? undefined,
+      });
+      return;
+    }
+
+    // Set word and sentence for API call
+    setWordToTranslate(wordText);
+    setSentenceToTranslate(sentenceText);
+
+    // Set initial definition (will be updated when API responds)
+    setWordDefinition({
+      word: wordText,
+      translation: selectedSegment.translated_sentence,
+      explanation: `Đang tải định nghĩa cho "${wordText}"...`,
+    });
+  }, [visible, selectedWord, selectedSegment]);
+
+  // Handle successful translation
+  useEffect(() => {
+    if (wordTranslationData) {
+      setWordDefinition({
+        word: wordTranslationData.word ?? wordToTranslate ?? '',
+        phonetic: wordTranslationData.phonetic,
+        translation: wordTranslationData.translated_word,
+        explanation: wordTranslationData.detail,
+        partOfSpeech: wordTranslationData.word_type,
+      });
+    }
+  }, [wordTranslationData, wordToTranslate]);
+
+  // Handle translation error
+  useEffect(() => {
+    if (translationError && selectedSegment) {
+      const translation = selectedSegment.translated_sentence ?? '';
+      setWordDefinition({
+        word: wordToTranslate ?? '',
+        translation: translation,
+        explanation: translation
+          ? `"${wordToTranslate}" trong câu này có nghĩa là "${translation}"`
+          : undefined,
+        partOfSpeech: 't.phụ',
+      });
+    }
+  }, [translationError, wordToTranslate, selectedSegment]);
+
+  const handlePlayWordAudio = () => {
+    if (selectedWord) {
+      void player.seekTo(selectedWord.start + 0.01);
+    }
+  };
+
+  const handleClose = () => {
+    setWordDefinition(null);
+    setWordToTranslate(null);
+    setSentenceToTranslate(null);
+    onClose();
+  };
+
+  if (!wordDefinition) {
+    return null;
+  }
+
   return (
     <Modal
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <TouchableOpacity
         activeOpacity={1}
-        onPress={onClose}
+        onPress={handleClose}
         className="flex-1 bg-[rgba(0,0,0,0.5)] justify-center items-center px-4"
       >
         <TouchableOpacity
@@ -46,21 +159,21 @@ const WordDefinitionModal = ({
             <View className="flex-1 mr-3">
               {/* Word */}
               <Text className="text-white text-2xl font-nunito font-bold mb-1">
-                {word}
+                {wordDefinition.word}
               </Text>
 
               {/* Phonetic */}
-              {phonetic && (
+              {wordDefinition.phonetic && (
                 <Text className="text-[#cbd8e1] text-base font-nunito font-medium">
-                  {phonetic}
+                  {wordDefinition.phonetic}
                 </Text>
               )}
             </View>
-            
+
             {/* Audio Button */}
-            {onPlayAudio && !isLoading && (
+            {!isTranslatingWord && (
               <TouchableOpacity
-                onPress={onPlayAudio}
+                onPress={handlePlayWordAudio}
                 className="p-2 -mt-1"
               >
                 <Ionicons name="volume-high" size={22} color="#cbd8e1" />
@@ -69,38 +182,38 @@ const WordDefinitionModal = ({
           </View>
 
           {/* Loading State */}
-          {isLoading && (
+          {isTranslatingWord && (
             <View className="py-4 items-center">
               <ActivityIndicator size="small" color="#cbd8e1" />
               <Text className="text-[#cbd8e1] text-sm font-nunito font-medium mt-2">
-                Đang tải định nghĩa...
+                Translating ...
               </Text>
             </View>
           )}
 
           {/* Content */}
-          {!isLoading && (
+          {!isTranslatingWord && (
             <>
               {/* Translation */}
-              {translation && (
+              {wordDefinition.translation && (
                 <Text className="text-white text-2xl font-nunito font-bold mb-3">
-                  {translation}
+                  {wordDefinition.translation}
                 </Text>
               )}
 
               {/* Explanation */}
-              {explanation && (
+              {wordDefinition.explanation && (
                 <Text className="text-[#cbd8e1] text-base font-nunito font-medium mb-4 leading-6">
-                  {explanation}
+                  {wordDefinition.explanation}
                 </Text>
               )}
 
               {/* Part of Speech Tag */}
-              {partOfSpeech && (
+              {wordDefinition.partOfSpeech && (
                 <View className="flex-row items-center">
                   <View className="bg-[#2b2e33] rounded-full px-3 py-1.5">
                     <Text className="text-white text-sm font-nunito font-bold">
-                      {partOfSpeech}
+                      {wordDefinition.partOfSpeech}
                     </Text>
                   </View>
                 </View>
@@ -114,4 +227,3 @@ const WordDefinitionModal = ({
 };
 
 export { WordDefinitionModal };
-
