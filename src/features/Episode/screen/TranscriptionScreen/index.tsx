@@ -1,4 +1,4 @@
-import { BottomSheet, Button } from '@/core/components';
+import { Button } from '@/core/components';
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -7,6 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { AudioPlayer } from './components/AudioPlayer';
+import ExplainBottomSheet from './components/ExplainBottomSheet';
 import { TranscriptScrollView } from './components/TranscriptScrollView';
 import { WordDefinitionModal } from './components/WordDefinitionModal';
 import {
@@ -50,6 +51,16 @@ const TranscriptionScreen = () => {
     setIsWordModalVisible(false);
     setSelectedWord(null);
     setSelectedSegment(null);
+  };
+
+  const handleOpenExplainBottomSheet = () => {
+    player.pause();
+    const currentTime = player.currentTime;
+    const currentSegment = segments.find(
+      seg => currentTime >= seg.start && currentTime <= seg.end,
+    );
+    setSelectedSegment(currentSegment ?? null);
+    setIsExplainBottomSheetVisible(true);
   };
 
   const { transcriptData, segments, setSegments, isLoading, refetch } =
@@ -126,8 +137,7 @@ const TranscriptionScreen = () => {
                       onPress={getButtonFunctionByName({
                         name: button.name,
                         handlePlayPause,
-                        onExplainPress: () =>
-                          setIsExplainBottomSheetVisible(true),
+                        onExplainPress: handleOpenExplainBottomSheet,
                       })}
                       className="items-center "
                     >
@@ -166,28 +176,12 @@ const TranscriptionScreen = () => {
         onClose={handleCloseWordModal}
       />
       {/* Explain Bottom Sheet */}
-      <BottomSheet
+      <ExplainBottomSheet
+        selectedText={selectedSegment?.text ?? null}
         visible={isExplainBottomSheetVisible}
         onClose={() => setIsExplainBottomSheetVisible(false)}
-        height={300}
-      >
-        <Text className="text-white text-2xl font-bold font-nunito mb-4">
-          Explain
-        </Text>
-
-        <Text className="text-gray-300 text-base font-nunito mb-4">
-          Get detailed explanations about this section of the episode.
-        </Text>
-
-        <TouchableOpacity
-          onPress={() => setIsExplainBottomSheetVisible(false)}
-          className="bg-primary rounded-xl py-3 items-center mt-4"
-        >
-          <Text className="text-surface font-bold font-nunito text-base">
-            Close
-          </Text>
-        </TouchableOpacity>
-      </BottomSheet>
+        episodeId={Number(episodeId)}
+      />
     </View>
   );
 };

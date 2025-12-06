@@ -13,7 +13,6 @@ interface BottomSheetProps {
   onClose: () => void;
   children: React.ReactNode;
   height?: number;
-  snapPoint?: number;
   containerStyle?: ViewStyle;
   overlayStyle?: ViewStyle;
   className?: string;
@@ -24,128 +23,160 @@ const BottomSheet = ({
   onClose,
   children,
   height = 300,
-  snapPoint = 100,
   containerStyle,
   overlayStyle,
   className,
 }: BottomSheetProps) => {
-  const [modalVisible, setModalVisible] = useState(false);
-  const translateY = useState(new Animated.Value(500))[0];
-  const opacity = useState(new Animated.Value(0))[0];
-  const prevVisibleRef = useRef(visible);
+  const [isVisible, setIsVisible] = useState(false);
+  const translateY = useRef(new Animated.Value(500)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+  const isClosing = useRef(false);
 
-  const panResponder = useState(() =>
+  const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gestureState) => {
         return gestureState.dy > 5;
       },
       onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dy > 0) {
+        if (gestureState.dy > 0 && !isClosing.current) {
           translateY.setValue(gestureState.dy);
         }
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > snapPoint) {
-          closeBottomSheet();
+        if (isClosing.current) return;
+
+        const shouldClose = gestureState.dy > 80 || gestureState.vy > 0.5;
+
+        if (shouldClose) {
+          handleClose();
         } else {
           Animated.spring(translateY, {
             toValue: 0,
+            tension: 200,
+            friction: 20,
             useNativeDriver: true,
           }).start();
         }
       },
     }),
-  )[0];
+  ).current;
 
-  const openBottomSheet = () => {
-    setModalVisible(true);
-    translateY.setValue(500);
-    opacity.setValue(0);
+  const handleClose = () => {
+    if (isClosing.current) return;
+    isClosing.current = true;
 
     Animated.parallel([
       Animated.timing(opacity, {
-        toValue: 0.5,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.spring(translateY, {
         toValue: 0,
-        tension: 65,
-        friction: 11,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  const closeBottomSheet = () => {
-    Animated.parallel([
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 250,
+        duration: 200,
         useNativeDriver: true,
       }),
       Animated.timing(translateY, {
         toValue: 500,
-        duration: 250,
+        duration: 200,
         useNativeDriver: true,
       }),
     ]).start(() => {
-      setModalVisible(false);
+      setIsVisible(false);
+      isClosing.current = false;
       onClose();
     });
   };
 
+  const handleOpen = () => {
+    setIsVisible(true);
+    isClosing.current = false;
+    translateY.setValue(500);
+    opacity.setValue(0);
+
+    requestAnimationFrame(() => {
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 0.5,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(translateY, {
+          toValue: 0,
+          tension: 65,
+          friction: 11,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
+
   useEffect(() => {
-    if (visible && !prevVisibleRef.current) {
-      // Opening
-      openBottomSheet();
-    } else if (!visible && prevVisibleRef.current) {
-      // Closing
-      closeBottomSheet();
+    if (visible && !isVisible && !isClosing.current) {
+      handleOpen();
+    } else if (!visible && isVisible && !isClosing.current) {
+      handleClose();
     }
-    prevVisibleRef.current = visible;
   }, [visible]);
 
-  if (!modalVisible) return null;
+  if (!isVisible) return null;
 
   return (
     <Modal
-      visible={modalVisible}
+      visible={isVisible}
       animationType="none"
       transparent
-      onRequestClose={closeBottomSheet}
+      onRequestClose={handleClose}
       statusBarTranslucent
     >
-      <View className="flex-1">
+      <View style={{ flex: 1 }}>
         <Animated.View
           style={[
             {
               opacity,
               backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
             },
             overlayStyle,
           ]}
-          className="absolute inset-0"
         >
           <TouchableOpacity
             activeOpacity={1}
-            onPress={closeBottomSheet}
-            className="flex-1"
+            onPress={handleClose}
+            style={{ flex: 1 }}
           />
         </Animated.View>
 
-        <View className="flex-1 justify-end" pointerEvents="box-none">
-          <Animated.View
-            style={{ transform: [{ translateY }] }}
-            {...panResponder.panHandlers}
-          >
+        <View
+          style={{ flex: 1, justifyContent: 'flex-end' }}
+          pointerEvents="box-none"
+        >
+          <Animated.View style={{ transform: [{ translateY }] }}>
             <View
               style={[{ minHeight: height }, containerStyle]}
               className={className ?? 'bg-surface rounded-t-3xl'}
             >
-              <View className="w-12 h-1 bg-gray-400 rounded-full self-center mb-4" />
-              {children}
+              {/* Drag Handle */}
+              <View
+                style={{
+                  width: '100%',
+                  paddingVertical: 12,
+                  alignItems: 'center',
+                }}
+                {...panResponder.panHandlers}
+              >
+                <View
+                  style={{
+                    width: 48,
+                    height: 4,
+                    backgroundColor: '#9CA3AF',
+                    borderRadius: 2,
+                  }}
+                />
+              </View>
+
+              {/* Content */}
+              <View style={{ flex: 1 }}>{children}</View>
             </View>
           </Animated.View>
         </View>
