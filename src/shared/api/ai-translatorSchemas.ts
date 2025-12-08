@@ -21,6 +21,28 @@ import type {
 } from '@tanstack/react-query';
 
 import { apiClient } from './apiClient';
+export type ChatbotConversationReadEpisodeId = number | null;
+
+export type ChatbotConversationReadConversationsItem = Record<string, string>;
+
+export interface ChatbotConversationRead {
+  id: number;
+  user_id: number;
+  episode_id?: ChatbotConversationReadEpisodeId;
+  conversations: ChatbotConversationReadConversationsItem[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChatbotCreate {
+  prompt: string;
+  episode_id: number;
+}
+
+export interface ChatbotResponse {
+  response: string;
+}
+
 export interface EpisodeCreate {
   episode_id: number;
   audio_url: string;
@@ -846,6 +868,258 @@ export const useTranslateSentence = <
 
   return useMutation(mutationOptions, queryClient);
 };
+
+/**
+ * @summary Chat With Episode
+ */
+export const chatWithEpisode = (
+  chatbotCreate: ChatbotCreate,
+  signal?: AbortSignal,
+) => {
+  return apiClient<ChatbotResponse>({
+    url: `/ai-translator/chatbot/episode`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: chatbotCreate,
+    signal,
+  });
+};
+
+export const getChatWithEpisodeMutationOptions = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof chatWithEpisode>>,
+    TError,
+    { data: ChatbotCreate },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof chatWithEpisode>>,
+  TError,
+  { data: ChatbotCreate },
+  TContext
+> => {
+  const mutationKey = ['chatWithEpisode'];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof chatWithEpisode>>,
+    { data: ChatbotCreate }
+  > = props => {
+    const { data } = props ?? {};
+
+    return chatWithEpisode(data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ChatWithEpisodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof chatWithEpisode>>
+>;
+export type ChatWithEpisodeMutationBody = ChatbotCreate;
+export type ChatWithEpisodeMutationError = HTTPValidationError;
+
+/**
+ * @summary Chat With Episode
+ */
+export const useChatWithEpisode = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof chatWithEpisode>>,
+      TError,
+      { data: ChatbotCreate },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof chatWithEpisode>>,
+  TError,
+  { data: ChatbotCreate },
+  TContext
+> => {
+  const mutationOptions = getChatWithEpisodeMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Get Episode Conversation History
+ */
+export const getConversationHistory = (
+  episodeId: number,
+  signal?: AbortSignal,
+) => {
+  return apiClient<ChatbotConversationRead>({
+    url: `/ai-translator/chatbot/history/episode/${episodeId}`,
+    method: 'GET',
+    signal,
+  });
+};
+
+export const getGetConversationHistoryQueryKey = (episodeId?: number) => {
+  return [`/ai-translator/chatbot/history/episode/${episodeId}`] as const;
+};
+
+export const getGetConversationHistoryQueryOptions = <
+  TData = Awaited<ReturnType<typeof getConversationHistory>>,
+  TError = HTTPValidationError,
+>(
+  episodeId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getConversationHistory>>,
+        TError,
+        TData
+      >
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetConversationHistoryQueryKey(episodeId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getConversationHistory>>
+  > = ({ signal }) => getConversationHistory(episodeId, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!episodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getConversationHistory>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetConversationHistoryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getConversationHistory>>
+>;
+export type GetConversationHistoryQueryError = HTTPValidationError;
+
+export function useGetConversationHistory<
+  TData = Awaited<ReturnType<typeof getConversationHistory>>,
+  TError = HTTPValidationError,
+>(
+  episodeId: number,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getConversationHistory>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getConversationHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getConversationHistory>>
+        >,
+        'initialData'
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetConversationHistory<
+  TData = Awaited<ReturnType<typeof getConversationHistory>>,
+  TError = HTTPValidationError,
+>(
+  episodeId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getConversationHistory>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getConversationHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getConversationHistory>>
+        >,
+        'initialData'
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetConversationHistory<
+  TData = Awaited<ReturnType<typeof getConversationHistory>>,
+  TError = HTTPValidationError,
+>(
+  episodeId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getConversationHistory>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Episode Conversation History
+ */
+
+export function useGetConversationHistory<
+  TData = Awaited<ReturnType<typeof getConversationHistory>>,
+  TError = HTTPValidationError,
+>(
+  episodeId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getConversationHistory>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetConversationHistoryQueryOptions(
+    episodeId,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
 
 /**
  * @summary Stream Transcript Progress
