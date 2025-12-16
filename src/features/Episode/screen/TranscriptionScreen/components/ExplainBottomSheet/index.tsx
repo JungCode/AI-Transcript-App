@@ -34,6 +34,7 @@ const ExplainBottomSheet = ({
   episodeId,
   selectedText,
 }: IExplainBottomSheetProps) => {
+  console.log(visible);
   const [text, setText] = useState('');
   const [messages, setMessages] = useState<LocalMessage[]>([]);
 

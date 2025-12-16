@@ -13,6 +13,7 @@ interface BottomSheetProps {
   onClose: () => void;
   children: React.ReactNode;
   height?: number;
+  isHeightAuto?: boolean;
   containerStyle?: ViewStyle;
   overlayStyle?: ViewStyle;
   className?: string;
@@ -23,6 +24,7 @@ const BottomSheet = ({
   onClose,
   children,
   height = 300,
+  isHeightAuto = false,
   containerStyle,
   overlayStyle,
   className,
@@ -153,7 +155,10 @@ const BottomSheet = ({
         >
           <Animated.View style={{ transform: [{ translateY }] }}>
             <View
-              style={[{ minHeight: height }, containerStyle]}
+              style={[
+                { minHeight: isHeightAuto ? undefined : height },
+                containerStyle,
+              ]}
               className={className ?? 'bg-surface rounded-t-3xl'}
             >
               {/* Drag Handle */}
@@ -176,7 +181,7 @@ const BottomSheet = ({
               </View>
 
               {/* Content */}
-              <View style={{ flex: 1 }}>{children}</View>
+              <View style={isHeightAuto ? {} : { flex: 1 }}>{children}</View>
             </View>
           </Animated.View>
         </View>

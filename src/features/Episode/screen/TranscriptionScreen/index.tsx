@@ -4,10 +4,11 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAudioPlayer } from 'expo-audio';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { AudioPlayer } from './components/AudioPlayer';
 import ExplainBottomSheet from './components/ExplainBottomSheet';
+import ShadowingBottomSheet from './components/ShadowingBottomSheet';
 import { TranscriptScrollView } from './components/TranscriptScrollView';
 import { WordDefinitionModal } from './components/WordDefinitionModal';
 import {
@@ -23,6 +24,8 @@ const TranscriptionScreen = () => {
   const [isWordModalVisible, setIsWordModalVisible] = useState(false);
   const [selectedWord, setSelectedWord] = useState<TranscriptWord | null>(null);
   const [isExplainBottomSheetVisible, setIsExplainBottomSheetVisible] =
+    useState(false);
+  const [isShadowingBottomSheetVisible, setIsShadowingBottomSheetVisible] =
     useState(false);
   const [selectedSegment, setSelectedSegment] =
     useState<TranscriptSegment | null>(null);
@@ -63,8 +66,23 @@ const TranscriptionScreen = () => {
     setIsExplainBottomSheetVisible(true);
   };
 
+  const handleOpenShadowingBottomSheet = () => {
+    const currentTime = player.currentTime;
+    const currentSegment = segments.find(
+      seg => currentTime >= seg.start && currentTime <= seg.end,
+    );
+    setSelectedSegment(currentSegment ?? null);
+    setIsShadowingBottomSheetVisible(true);
+  };
+
   const { transcriptData, segments, setSegments, isLoading, refetch } =
     useTranscriptManagement({ episodeId: Number(episodeId) });
+
+  useEffect(() => {
+    if (!player) return;
+
+    player.play();
+  }, [player]);
 
   return (
     <View className="flex-1 bg-surface px-4">
@@ -159,28 +177,40 @@ const TranscriptionScreen = () => {
                     </TouchableOpacity>
                   ))}
                 </View>
-                <View className="p-3 bg-surface-darkest rounded-xl">
+                <TouchableOpacity
+                  className="p-3 bg-surface-darkest rounded-xl"
+                  onPress={handleOpenShadowingBottomSheet}
+                >
                   <AntDesign name="audio" size={24} color="#C2F590" />
-                </View>
+                </TouchableOpacity>
               </View>
             )}
           </AudioPlayer>
         </View>
       </View>
 
-      <WordDefinitionModal
-        visible={isWordModalVisible}
-        selectedWord={selectedWord}
-        selectedSegment={selectedSegment}
-        player={player}
-        onClose={handleCloseWordModal}
-      />
       {/* Explain Bottom Sheet */}
       <ExplainBottomSheet
         selectedText={selectedSegment?.text ?? null}
         visible={isExplainBottomSheetVisible}
         onClose={() => setIsExplainBottomSheetVisible(false)}
         episodeId={Number(episodeId)}
+      />
+      <ShadowingBottomSheet
+        player={player}
+        status={status}
+        selectedSegment={selectedSegment}
+        visible={isShadowingBottomSheetVisible}
+        onClose={() => setIsShadowingBottomSheetVisible(false)}
+        episodeId={Number(episodeId)}
+        onShowWordDefinition={handleShowWordDefinition}
+      />
+      <WordDefinitionModal
+        visible={isWordModalVisible}
+        selectedWord={selectedWord}
+        selectedSegment={selectedSegment}
+        player={player}
+        onClose={handleCloseWordModal}
       />
     </View>
   );
