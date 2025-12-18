@@ -200,10 +200,12 @@ const TranscriptionScreen = () => {
         player={player}
         status={status}
         selectedSegment={selectedSegment}
+        segments={segments}
         visible={isShadowingBottomSheetVisible}
         onClose={() => setIsShadowingBottomSheetVisible(false)}
         episodeId={Number(episodeId)}
         onShowWordDefinition={handleShowWordDefinition}
+        onSegmentChange={setSelectedSegment}
       />
       <WordDefinitionModal
         visible={isWordModalVisible}
