@@ -4,7 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import type { AudioPlayer, AudioStatus } from 'expo-audio';
 import { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import type { TranscriptSegment, TranscriptWord } from '../../constants/transcript';
+import type {
+  TranscriptSegment,
+  TranscriptWord,
+} from '../../constants/transcript';
 import { Segment } from '../TranscriptScrollView/Segment';
 import ShadowingComponent from './components/ShadowingComponent';
 import {
@@ -20,10 +23,12 @@ interface IShadowingBottomSheetProps {
   player: AudioPlayer;
   status: AudioStatus;
   selectedSegment: TranscriptSegment | null;
+  segments: TranscriptSegment[];
   onShowWordDefinition?: (
     word: TranscriptWord,
     segment: TranscriptSegment,
   ) => void;
+  onSegmentChange?: (segment: TranscriptSegment | null) => void;
 }
 
 const ShadowingBottomSheet = ({
@@ -33,7 +38,9 @@ const ShadowingBottomSheet = ({
   player,
   status,
   selectedSegment,
+  segments,
   onShowWordDefinition,
+  onSegmentChange,
 }: IShadowingBottomSheetProps) => {
   const [isAutoEchoActive, setIsAutoEchoActive] = useState(false);
 
@@ -103,7 +110,9 @@ const ShadowingBottomSheet = ({
               player={player}
               status={status}
               selectedSegment={selectedSegment}
+              segments={segments}
               visible={isAutoEchoActive}
+              onSegmentChange={onSegmentChange}
             />
           ) : (
             // Component ban đầu
