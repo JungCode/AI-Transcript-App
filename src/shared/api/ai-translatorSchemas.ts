@@ -106,12 +106,67 @@ export interface ValidationError {
   type: string;
 }
 
+export type VideoInfoThumbnail = string | null;
+
+/**
+ * Video information response
+ */
+export interface VideoInfo {
+  id: string;
+  title: string;
+  duration: number;
+  thumbnail?: VideoInfoThumbnail;
+  url: string;
+  size: number;
+  size_mb: number;
+}
+
+/**
+ * Response for video list endpoint
+ */
+export interface VideoListResponse {
+  count: number;
+  videos: VideoInfo[];
+}
+
+/**
+ * Schema for creating a saved word translation
+ */
+export interface WordSavedTranslationCreate {
+  word: string;
+  translated_word: string;
+  detail: string;
+  word_type: string;
+  phonetic: string;
+  episode_id: number;
+}
+
+/**
+ * Schema for reading a saved word translation
+ */
+export interface WordSavedTranslationRead {
+  word: string;
+  translated_word: string;
+  detail: string;
+  word_type: string;
+  phonetic: string;
+  episode_id: number;
+  id: number;
+  user_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface WordTranslationRead {
   word: string;
   translated_word: string;
   detail: string;
   word_type: string;
   phonetic: string;
+}
+
+export interface GetSavedWordsParams {
+  episode_id: number;
 }
 
 /**
@@ -224,6 +279,413 @@ export function useHealth<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions = getHealthQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Get all available videos with metadata including duration, title, and thumbnail
+ * @summary Explore Videos
+ */
+export const exploreVideos = (signal?: AbortSignal) => {
+  return apiClient<VideoListResponse>({
+    url: `/ai-translator/videos/explore`,
+    method: 'GET',
+    signal,
+  });
+};
+
+export const getExploreVideosQueryKey = () => {
+  return [`/ai-translator/videos/explore`] as const;
+};
+
+export const getExploreVideosQueryOptions = <
+  TData = Awaited<ReturnType<typeof exploreVideos>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof exploreVideos>>, TError, TData>
+  >;
+}) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getExploreVideosQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof exploreVideos>>> = ({
+    signal,
+  }) => exploreVideos(signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof exploreVideos>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ExploreVideosQueryResult = NonNullable<
+  Awaited<ReturnType<typeof exploreVideos>>
+>;
+export type ExploreVideosQueryError = unknown;
+
+export function useExploreVideos<
+  TData = Awaited<ReturnType<typeof exploreVideos>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof exploreVideos>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof exploreVideos>>,
+          TError,
+          Awaited<ReturnType<typeof exploreVideos>>
+        >,
+        'initialData'
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useExploreVideos<
+  TData = Awaited<ReturnType<typeof exploreVideos>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof exploreVideos>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof exploreVideos>>,
+          TError,
+          Awaited<ReturnType<typeof exploreVideos>>
+        >,
+        'initialData'
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useExploreVideos<
+  TData = Awaited<ReturnType<typeof exploreVideos>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof exploreVideos>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Explore Videos
+ */
+
+export function useExploreVideos<
+  TData = Awaited<ReturnType<typeof exploreVideos>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof exploreVideos>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getExploreVideosQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Serve a video file by name
+ * @summary Get Video
+ */
+export const getVideo = (videoName: string, signal?: AbortSignal) => {
+  return apiClient<unknown>({
+    url: `/ai-translator/videos/${videoName}`,
+    method: 'GET',
+    signal,
+  });
+};
+
+export const getGetVideoQueryKey = (videoName?: string) => {
+  return [`/ai-translator/videos/${videoName}`] as const;
+};
+
+export const getGetVideoQueryOptions = <
+  TData = Awaited<ReturnType<typeof getVideo>>,
+  TError = HTTPValidationError,
+>(
+  videoName: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getVideo>>, TError, TData>
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetVideoQueryKey(videoName);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getVideo>>> = ({
+    signal,
+  }) => getVideo(videoName, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!videoName,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getVideo>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+};
+
+export type GetVideoQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getVideo>>
+>;
+export type GetVideoQueryError = HTTPValidationError;
+
+export function useGetVideo<
+  TData = Awaited<ReturnType<typeof getVideo>>,
+  TError = HTTPValidationError,
+>(
+  videoName: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getVideo>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideo>>,
+          TError,
+          Awaited<ReturnType<typeof getVideo>>
+        >,
+        'initialData'
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideo<
+  TData = Awaited<ReturnType<typeof getVideo>>,
+  TError = HTTPValidationError,
+>(
+  videoName: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getVideo>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideo>>,
+          TError,
+          Awaited<ReturnType<typeof getVideo>>
+        >,
+        'initialData'
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideo<
+  TData = Awaited<ReturnType<typeof getVideo>>,
+  TError = HTTPValidationError,
+>(
+  videoName: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getVideo>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Video
+ */
+
+export function useGetVideo<
+  TData = Awaited<ReturnType<typeof getVideo>>,
+  TError = HTTPValidationError,
+>(
+  videoName: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getVideo>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetVideoQueryOptions(videoName, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Serve a thumbnail image by name
+ * @summary Get Thumbnail
+ */
+export const getThumbnail = (thumbnailName: string, signal?: AbortSignal) => {
+  return apiClient<unknown>({
+    url: `/ai-translator/thumbnails/${thumbnailName}`,
+    method: 'GET',
+    signal,
+  });
+};
+
+export const getGetThumbnailQueryKey = (thumbnailName?: string) => {
+  return [`/ai-translator/thumbnails/${thumbnailName}`] as const;
+};
+
+export const getGetThumbnailQueryOptions = <
+  TData = Awaited<ReturnType<typeof getThumbnail>>,
+  TError = HTTPValidationError,
+>(
+  thumbnailName: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getThumbnail>>, TError, TData>
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetThumbnailQueryKey(thumbnailName);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getThumbnail>>> = ({
+    signal,
+  }) => getThumbnail(thumbnailName, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!thumbnailName,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getThumbnail>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetThumbnailQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getThumbnail>>
+>;
+export type GetThumbnailQueryError = HTTPValidationError;
+
+export function useGetThumbnail<
+  TData = Awaited<ReturnType<typeof getThumbnail>>,
+  TError = HTTPValidationError,
+>(
+  thumbnailName: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getThumbnail>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getThumbnail>>,
+          TError,
+          Awaited<ReturnType<typeof getThumbnail>>
+        >,
+        'initialData'
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetThumbnail<
+  TData = Awaited<ReturnType<typeof getThumbnail>>,
+  TError = HTTPValidationError,
+>(
+  thumbnailName: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getThumbnail>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getThumbnail>>,
+          TError,
+          Awaited<ReturnType<typeof getThumbnail>>
+        >,
+        'initialData'
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetThumbnail<
+  TData = Awaited<ReturnType<typeof getThumbnail>>,
+  TError = HTTPValidationError,
+>(
+  thumbnailName: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getThumbnail>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Thumbnail
+ */
+
+export function useGetThumbnail<
+  TData = Awaited<ReturnType<typeof getThumbnail>>,
+  TError = HTTPValidationError,
+>(
+  thumbnailName: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getThumbnail>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetThumbnailQueryOptions(thumbnailName, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
@@ -1276,6 +1738,232 @@ export function useStreamTranscriptProgress<
     transcriptId,
     options,
   );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Save a translated word to the database
+ * @summary Save Word Translation
+ */
+export const saveWordTranslation = (
+  wordSavedTranslationCreate: WordSavedTranslationCreate,
+  signal?: AbortSignal,
+) => {
+  return apiClient<WordSavedTranslationRead>({
+    url: `/ai-translator/words/saved`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: wordSavedTranslationCreate,
+    signal,
+  });
+};
+
+export const getSaveWordTranslationMutationOptions = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saveWordTranslation>>,
+    TError,
+    { data: WordSavedTranslationCreate },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof saveWordTranslation>>,
+  TError,
+  { data: WordSavedTranslationCreate },
+  TContext
+> => {
+  const mutationKey = ['saveWordTranslation'];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof saveWordTranslation>>,
+    { data: WordSavedTranslationCreate }
+  > = props => {
+    const { data } = props ?? {};
+
+    return saveWordTranslation(data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SaveWordTranslationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof saveWordTranslation>>
+>;
+export type SaveWordTranslationMutationBody = WordSavedTranslationCreate;
+export type SaveWordTranslationMutationError = HTTPValidationError;
+
+/**
+ * @summary Save Word Translation
+ */
+export const useSaveWordTranslation = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof saveWordTranslation>>,
+      TError,
+      { data: WordSavedTranslationCreate },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof saveWordTranslation>>,
+  TError,
+  { data: WordSavedTranslationCreate },
+  TContext
+> => {
+  const mutationOptions = getSaveWordTranslationMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Get all saved word translations for a specific episode
+ * @summary Get Saved Words
+ */
+export const getSavedWords = (
+  params: GetSavedWordsParams,
+  signal?: AbortSignal,
+) => {
+  return apiClient<WordSavedTranslationRead[]>({
+    url: `/ai-translator/words/saved`,
+    method: 'GET',
+    params,
+    signal,
+  });
+};
+
+export const getGetSavedWordsQueryKey = (params?: GetSavedWordsParams) => {
+  return [`/ai-translator/words/saved`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetSavedWordsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSavedWords>>,
+  TError = HTTPValidationError,
+>(
+  params: GetSavedWordsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSavedWords>>, TError, TData>
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSavedWordsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSavedWords>>> = ({
+    signal,
+  }) => getSavedWords(params, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSavedWords>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetSavedWordsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSavedWords>>
+>;
+export type GetSavedWordsQueryError = HTTPValidationError;
+
+export function useGetSavedWords<
+  TData = Awaited<ReturnType<typeof getSavedWords>>,
+  TError = HTTPValidationError,
+>(
+  params: GetSavedWordsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSavedWords>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSavedWords>>,
+          TError,
+          Awaited<ReturnType<typeof getSavedWords>>
+        >,
+        'initialData'
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetSavedWords<
+  TData = Awaited<ReturnType<typeof getSavedWords>>,
+  TError = HTTPValidationError,
+>(
+  params: GetSavedWordsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSavedWords>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSavedWords>>,
+          TError,
+          Awaited<ReturnType<typeof getSavedWords>>
+        >,
+        'initialData'
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetSavedWords<
+  TData = Awaited<ReturnType<typeof getSavedWords>>,
+  TError = HTTPValidationError,
+>(
+  params: GetSavedWordsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSavedWords>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get Saved Words
+ */
+
+export function useGetSavedWords<
+  TData = Awaited<ReturnType<typeof getSavedWords>>,
+  TError = HTTPValidationError,
+>(
+  params: GetSavedWordsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSavedWords>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetSavedWordsQueryOptions(params, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

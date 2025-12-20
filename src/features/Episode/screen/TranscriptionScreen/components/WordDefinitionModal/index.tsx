@@ -1,5 +1,8 @@
-import { useTranslateWord } from '@/shared/api/ai-translatorSchemas';
-import { Ionicons } from '@expo/vector-icons';
+import {
+  useSaveWordTranslation,
+  useTranslateWord,
+} from '@/shared/api/ai-translatorSchemas';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import type { AudioPlayer } from 'expo-audio';
 import { useEffect, useState } from 'react';
 import {
@@ -20,6 +23,7 @@ interface WordDefinitionData {
   translation?: string;
   explanation?: string;
   partOfSpeech?: string;
+  episode_id?: number;
 }
 
 interface IWordDefinitionModalProps {
@@ -28,6 +32,7 @@ interface IWordDefinitionModalProps {
   selectedSegment: TranscriptSegment | null;
   player: AudioPlayer;
   onClose: () => void;
+  episodeId?: number;
 }
 
 const WordDefinitionModal = ({
@@ -36,10 +41,12 @@ const WordDefinitionModal = ({
   selectedSegment,
   player,
   onClose,
+  episodeId,
 }: IWordDefinitionModalProps) => {
   const [wordDefinition, setWordDefinition] =
     useState<WordDefinitionData | null>(null);
   const [wordToTranslate, setWordToTranslate] = useState<string | null>(null);
+  const [saveSuccessful, setSaveSuccessful] = useState(false);
   const [sentenceToTranslate, setSentenceToTranslate] = useState<string | null>(
     null,
   );
@@ -61,6 +68,28 @@ const WordDefinitionModal = ({
     },
   });
 
+  const { mutate: saveWord, isPending: isSavingWord } = useSaveWordTranslation({
+    mutation: {
+      onSuccess: () => {
+        setSaveSuccessful(true);
+      },
+    },
+  });
+
+  const handleSaveWord = () => {
+    if (wordDefinition) {
+      saveWord({
+        data: {
+          word: wordDefinition.word,
+          phonetic: wordDefinition.phonetic ?? '',
+          translated_word: wordDefinition.translation ?? '',
+          detail: wordDefinition.explanation ?? '',
+          word_type: wordDefinition.partOfSpeech ?? '',
+          episode_id: episodeId ?? 0,
+        },
+      });
+    }
+  };
   // Handle word/segment change
   useEffect(() => {
     if (!visible || !selectedWord || !selectedSegment) {
@@ -169,7 +198,17 @@ const WordDefinitionModal = ({
                 </Text>
               )}
             </View>
+            {/* Save Button */}
+            {!isTranslatingWord && !isSavingWord && !saveSuccessful && (
+              <TouchableOpacity onPress={handleSaveWord}>
+                <MaterialIcons name="save-alt" size={24} color="#cbd8e1" />
+              </TouchableOpacity>
+            )}
 
+            {isSavingWord && <ActivityIndicator size="small" color="#cbd8e1" />}
+            {saveSuccessful && (
+              <MaterialIcons name="check-circle" size={24} color="#cbd8e1" />
+            )}
             {/* Audio Button */}
             {!isTranslatingWord && (
               <TouchableOpacity
